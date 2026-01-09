@@ -1,0 +1,82 @@
+.share-invite {
+  padding: 20px;
+}
+
+.share-description {
+  margin: 0 0 16px 0;
+  color: #6b7280;
+  text-align: center;
+}
+
+.share-link-box {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.share-link-input {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #374151;
+  background: #f9fafb;
+  min-width: 0;
+}
+
+.share-link-input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+}
+
+.copy-btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #8b5cf6;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.copy-btn:hover {
+  background: #7c3aed;
+}
+
+.copy-btn.copied {
+  background: #22c55e;
+}
+
+.share-code {
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.share-code strong {
+  color: #8b5cf6;
+  font-family: monospace;
+  font-size: 1rem;
+}
+
+.share-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.share-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}

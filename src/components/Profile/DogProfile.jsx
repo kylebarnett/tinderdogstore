@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useUser } from '../../context/UserContext';
 import { fileToBase64 } from '../../utils/storage';
 import { toyCategories } from '../../data/toys';
+import './DogProfile.css';
 
 const DOG_SIZES = [
   { id: 'small', label: 'Small', description: 'Under 20 lbs' },
@@ -81,34 +82,32 @@ export function DogProfile() {
 
   if (!isEditing && dogProfile) {
     return (
-      <div className="text-center p-5">
-        <div className="w-28 h-28 mx-auto mb-4 rounded-full overflow-hidden bg-gray-100">
+      <div className="dog-profile-view">
+        <div className="dog-photo-display">
           {dogProfile.photo ? (
-            <img src={dogProfile.photo} alt={dogProfile.name} className="w-full h-full object-cover" />
+            <img src={dogProfile.photo} alt={dogProfile.name} />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-              No Photo
-            </div>
+            <div className="dog-photo-placeholder">No Photo</div>
           )}
         </div>
-        <h3 className="m-0 mb-4 text-gray-800 text-2xl font-bold">{dogProfile.name}</h3>
-        <div className="text-left bg-gray-50 rounded-xl p-4 mb-4">
+        <h3>{dogProfile.name}</h3>
+        <div className="dog-details">
           {dogProfile.size && (
-            <div className="flex justify-between py-2 border-b border-gray-200 last:border-0">
-              <span className="text-gray-500 font-medium">Size:</span>
+            <div className="dog-detail">
+              <span className="detail-label">Size:</span>
               <span>{DOG_SIZES.find((s) => s.id === dogProfile.size)?.label}</span>
             </div>
           )}
           {dogProfile.activityLevel && (
-            <div className="flex justify-between py-2 border-b border-gray-200 last:border-0">
-              <span className="text-gray-500 font-medium">Activity:</span>
+            <div className="dog-detail">
+              <span className="detail-label">Activity:</span>
               <span>{ACTIVITY_LEVELS.find((a) => a.id === dogProfile.activityLevel)?.label}</span>
             </div>
           )}
           {dogProfile.toyPreferences?.length > 0 && (
-            <div className="flex justify-between py-2">
-              <span className="text-gray-500 font-medium">Loves:</span>
-              <span className="text-right">
+            <div className="dog-detail">
+              <span className="detail-label">Loves:</span>
+              <span>
                 {dogProfile.toyPreferences
                   .map((p) => toyCategories.find((c) => c.id === p)?.label)
                   .join(', ')}
@@ -116,10 +115,7 @@ export function DogProfile() {
             </div>
           )}
         </div>
-        <button
-          className="py-2.5 px-6 border-2 border-purple-600 rounded-lg bg-transparent text-purple-600 font-semibold cursor-pointer transition-all hover:bg-purple-600 hover:text-white"
-          onClick={handleEdit}
-        >
+        <button className="edit-profile-btn" onClick={handleEdit}>
           Edit Profile
         </button>
       </div>
@@ -127,22 +123,20 @@ export function DogProfile() {
   }
 
   return (
-    <div className="p-5">
-      <h3 className="m-0 mb-5 text-gray-800 text-center text-xl font-bold">
-        {dogProfile ? 'Edit Dog Profile' : 'Add Your Dog'}
-      </h3>
+    <div className="dog-profile-form">
+      <h3>{dogProfile ? 'Edit Dog Profile' : 'Add Your Dog'}</h3>
 
-      <div className="flex justify-center mb-6">
+      <div className="photo-upload">
         <div
-          className="w-28 h-28 rounded-full overflow-hidden cursor-pointer bg-gray-100 border-3 border-dashed border-gray-300 transition-colors hover:border-purple-500"
+          className="photo-preview"
           onClick={() => fileInputRef.current?.click()}
         >
           {formData.photo ? (
-            <img src={formData.photo} alt="Dog preview" className="w-full h-full object-cover" />
+            <img src={formData.photo} alt="Dog preview" />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
-              <span className="text-3xl leading-none">+</span>
-              <span className="text-xs">Add Photo</span>
+            <div className="photo-placeholder">
+              <span>+</span>
+              <span>Add Photo</span>
             </div>
           )}
         </div>
@@ -155,86 +149,69 @@ export function DogProfile() {
         />
       </div>
 
-      <div className="mb-5">
-        <label className="block mb-2 text-gray-700 font-semibold">Dog's Name</label>
+      <div className="form-field">
+        <label>Dog's Name</label>
         <input
           type="text"
           value={formData.name}
           onChange={(e) => handleChange('name', e.target.value)}
           placeholder="Enter name"
-          className="w-full py-3 px-4 border-2 border-gray-200 rounded-xl text-base transition-all focus:outline-none focus:border-purple-500"
         />
       </div>
 
-      <div className="mb-5">
-        <label className="block mb-2 text-gray-700 font-semibold">Size</label>
-        <div className="grid grid-cols-2 gap-2.5">
+      <div className="form-field">
+        <label>Size</label>
+        <div className="option-grid">
           {DOG_SIZES.map((size) => (
             <button
               key={size.id}
               type="button"
-              className={`flex flex-col items-center p-3 border-2 rounded-xl bg-white cursor-pointer transition-all ${
-                formData.size === size.id
-                  ? 'border-purple-600 bg-purple-50'
-                  : 'border-gray-200 hover:border-purple-300'
-              }`}
+              className={`option-btn ${formData.size === size.id ? 'selected' : ''}`}
               onClick={() => handleChange('size', size.id)}
             >
-              <span className="font-semibold text-gray-800">{size.label}</span>
-              <span className="text-xs text-gray-500 mt-0.5">{size.description}</span>
+              <span className="option-label">{size.label}</span>
+              <span className="option-desc">{size.description}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="mb-5">
-        <label className="block mb-2 text-gray-700 font-semibold">Activity Level</label>
-        <div className="grid grid-cols-2 gap-2.5">
+      <div className="form-field">
+        <label>Activity Level</label>
+        <div className="option-grid">
           {ACTIVITY_LEVELS.map((level) => (
             <button
               key={level.id}
               type="button"
-              className={`flex flex-col items-center p-3 border-2 rounded-xl bg-white cursor-pointer transition-all ${
-                formData.activityLevel === level.id
-                  ? 'border-purple-600 bg-purple-50'
-                  : 'border-gray-200 hover:border-purple-300'
-              }`}
+              className={`option-btn ${formData.activityLevel === level.id ? 'selected' : ''}`}
               onClick={() => handleChange('activityLevel', level.id)}
             >
-              <span className="font-semibold text-gray-800">{level.label}</span>
-              <span className="text-xs text-gray-500 mt-0.5">{level.description}</span>
+              <span className="option-label">{level.label}</span>
+              <span className="option-desc">{level.description}</span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="mb-5">
-        <label className="block mb-2 text-gray-700 font-semibold">Favorite Toy Types</label>
-        <div className="grid grid-cols-2 gap-2">
+      <div className="form-field">
+        <label>Favorite Toy Types</label>
+        <div className="checkbox-grid">
           {toyCategories.map((cat) => (
-            <label
-              key={cat.id}
-              className={`flex items-center gap-2 p-2.5 px-3 border-2 rounded-lg cursor-pointer transition-all ${
-                formData.toyPreferences.includes(cat.id)
-                  ? 'border-purple-600 bg-purple-50'
-                  : 'border-gray-200 hover:border-purple-300'
-              }`}
-            >
+            <label key={cat.id} className="checkbox-item">
               <input
                 type="checkbox"
                 checked={formData.toyPreferences.includes(cat.id)}
                 onChange={() => handleToyPreferenceToggle(cat.id)}
-                className="accent-purple-600 w-4 h-4"
               />
-              <span className="text-sm text-gray-700">{cat.label}</span>
+              <span>{cat.label}</span>
             </label>
           ))}
         </div>
       </div>
 
-      <div className="flex gap-3 mt-6">
+      <div className="form-actions">
         <button
-          className="flex-1 py-3.5 border-none rounded-xl bg-purple-600 text-white text-base font-semibold cursor-pointer transition-colors hover:bg-purple-700 disabled:opacity-70 disabled:cursor-not-allowed"
+          className="save-btn"
           onClick={handleSave}
           disabled={isSaving}
         >
@@ -242,7 +219,7 @@ export function DogProfile() {
         </button>
         {dogProfile && (
           <button
-            className="py-3.5 px-6 border-2 border-gray-200 rounded-xl bg-white text-gray-500 text-base font-semibold cursor-pointer transition-all hover:border-gray-300 hover:bg-gray-50"
+            className="cancel-btn"
             onClick={() => {
               setFormData({
                 name: dogProfile.name,
