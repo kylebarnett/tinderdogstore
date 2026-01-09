@@ -1,16 +1,26 @@
-# React + Vite
+# Pup Picks
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A Tinder-style dog toy store where you swipe right to add toys to your cart.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Swipe to Shop**: Browse dog toys by swiping right (add to cart) or left (skip)
+- **User Accounts**: Create an account to save your preferences
+- **Dog Profiles**: Add your dog's info including name, size, activity level, and favorite toy types
+- **Shopping Cart**: View and manage items you've added
+- **Invite Friends**: Share the app with other dog owners
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+Open http://localhost:5173 to view the app.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Tech Stack
+
+- React
+- Vite
+- localStorage for data persistence
