@@ -2,7 +2,8 @@ const STORAGE_KEYS = {
   USERS: 'pup_picks_users',
   CURRENT_USER: 'pup_picks_current_user',
   DOG_PROFILES: 'pup_picks_dog_profiles',
-  REFERRAL: 'pup_picks_referral'
+  REFERRAL: 'pup_picks_referral',
+  REVIEWS: 'pup_picks_reviews'
 };
 
 // Simple hash function for passwords (not cryptographically secure, but fine for localStorage demo)
@@ -117,4 +118,39 @@ export function fileToBase64(file) {
 export function generateShareLink(referralCode) {
   const baseUrl = window.location.origin + window.location.pathname;
   return `${baseUrl}?ref=${referralCode}`;
+}
+
+// Review management
+export function getReviews() {
+  const reviews = localStorage.getItem(STORAGE_KEYS.REVIEWS);
+  return reviews ? JSON.parse(reviews) : {};
+}
+
+export function getReviewsForToy(toyId) {
+  const reviews = getReviews();
+  return reviews[toyId] || [];
+}
+
+export function addReview(toyId, username, rating, comment) {
+  const reviews = getReviews();
+  if (!reviews[toyId]) {
+    reviews[toyId] = [];
+  }
+
+  const review = {
+    id: Date.now(),
+    username,
+    rating,
+    comment,
+    createdAt: new Date().toISOString()
+  };
+
+  reviews[toyId].unshift(review);
+  localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(reviews));
+  return review;
+}
+
+export function getUserReviewForToy(toyId, username) {
+  const reviews = getReviewsForToy(toyId);
+  return reviews.find(r => r.username === username) || null;
 }

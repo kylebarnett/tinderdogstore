@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ToyCard } from './components/ToyCard';
+import { ToyDetails } from './components/ToyDetails';
 import { Cart } from './components/Cart';
 import { AuthModal } from './components/Auth/AuthModal';
 import { ProfilePage } from './components/Profile/ProfilePage';
@@ -12,6 +13,7 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAuth, setShowAuth] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [selectedToy, setSelectedToy] = useState(null);
 
   const { addToCart } = useCart();
   const { user, isLoggedIn, isLoading, dogProfile } = useUser();
@@ -30,6 +32,10 @@ function App() {
 
   const handleReset = () => {
     setCurrentIndex(0);
+  };
+
+  const handleViewDetails = (toy) => {
+    setSelectedToy(toy);
   };
 
   if (isLoading) {
@@ -88,6 +94,7 @@ function App() {
               toy={currentToy}
               onSwipeLeft={handleSwipeLeft}
               onSwipeRight={handleSwipeRight}
+              onViewDetails={handleViewDetails}
             />
           </>
         )}
@@ -95,6 +102,7 @@ function App() {
 
       <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
       {showProfile && <ProfilePage onClose={() => setShowProfile(false)} />}
+      {selectedToy && <ToyDetails toy={selectedToy} onClose={() => setSelectedToy(null)} />}
     </div>
   );
 }

@@ -1,19 +1,36 @@
 import { useState, useRef } from 'react';
 import './ToyCard.css';
 
-export function ToyCard({ toy, onSwipeLeft, onSwipeRight }) {
+function StarRating({ rating }) {
+  const stars = [];
+  for (let i = 1; i <= 5; i++) {
+    const filled = rating >= i;
+    const halfFilled = !filled && rating >= i - 0.5;
+    stars.push(
+      <span key={i} className={`star ${filled ? 'filled' : ''} ${halfFilled ? 'half' : ''}`}>
+        {filled || halfFilled ? '★' : '☆'}
+      </span>
+    );
+  }
+  return <span className="star-rating">{stars}</span>;
+}
+
+export function ToyCard({ toy, onSwipeLeft, onSwipeRight, onViewDetails }) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
   const [leaveDirection, setLeaveDirection] = useState(null);
   const dragStart = useRef({ x: 0, y: 0 });
+  const hasDragged = useRef(false);
   const cardRef = useRef(null);
 
   const SWIPE_THRESHOLD = 100;
+  const DRAG_THRESHOLD = 10;
 
   const handlePointerDown = (e) => {
     if (isLeaving) return;
     setIsDragging(true);
+    hasDragged.current = false;
     dragStart.current = { x: e.clientX - position.x, y: e.clientY - position.y };
     cardRef.current?.setPointerCapture(e.pointerId);
   };
@@ -22,6 +39,11 @@ export function ToyCard({ toy, onSwipeLeft, onSwipeRight }) {
     if (!isDragging || isLeaving) return;
     const newX = e.clientX - dragStart.current.x;
     const newY = e.clientY - dragStart.current.y;
+
+    if (Math.abs(newX) > DRAG_THRESHOLD || Math.abs(newY) > DRAG_THRESHOLD) {
+      hasDragged.current = true;
+    }
+
     setPosition({ x: newX, y: newY });
   };
 
@@ -36,6 +58,12 @@ export function ToyCard({ toy, onSwipeLeft, onSwipeRight }) {
       triggerSwipe('left');
     } else {
       setPosition({ x: 0, y: 0 });
+    }
+  };
+
+  const handleClick = () => {
+    if (!hasDragged.current && onViewDetails) {
+      onViewDetails(toy);
     }
   };
 
@@ -82,16 +110,25 @@ export function ToyCard({ toy, onSwipeLeft, onSwipeRight }) {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
+        onClick={handleClick}
       >
         {swipeIndicator && (
           <div className={`swipe-indicator ${swipeIndicator}`}>
             {swipeIndicator === 'like' ? 'ADD TO CART' : 'SKIP'}
           </div>
         )}
-        <div className="toy-image" style={{ backgroundImage: `url(${toy.image})` }} />
+        <div className="toy-image" style={{ backgroundImage: `url(${toy.image})` }}>
+          <div className="tap-hint">Tap for details</div>
+        </div>
         <div className="toy-info">
-          <h2 className="toy-name">{toy.name}</h2>
-          <p className="toy-price">${toy.price.toFixed(2)}</p>
+          <div className="toy-header">
+            <h2 className="toy-name">{toy.name}</h2>
+            <p className="toy-price">${toy.price.toFixed(2)}</p>
+          </div>
+          <div className="toy-rating">
+            <StarRating rating={toy.rating} />
+            <span className="review-count">({toy.reviewCount})</span>
+          </div>
           <p className="toy-description">{toy.description}</p>
         </div>
       </div>
