@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Star, ShoppingCart } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { useCart } from '../context/CartContext';
 import { getReviewsForToy, addReview, getUserReviewForToy } from '../utils/storage';
-import './ToyDetails.css';
+import styles from './ToyDetails.module.css';
 
 function StarRating({ rating, onRate, interactive = false, size = 'medium' }) {
   const [hoverRating, setHoverRating] = useState(0);
+
+  const sizeClass = size === 'small' ? styles.starSmall : size === 'large' ? styles.starLarge : styles.starMedium;
 
   const stars = [];
   for (let i = 1; i <= 5; i++) {
@@ -13,19 +17,18 @@ function StarRating({ rating, onRate, interactive = false, size = 'medium' }) {
     const halfFilled = !filled && rating >= i - 0.5;
 
     stars.push(
-      <span
+      <Star
         key={i}
-        className={`star ${size} ${filled ? 'filled' : ''} ${halfFilled ? 'half' : ''} ${interactive ? 'interactive' : ''}`}
+        className={`${sizeClass} ${filled || halfFilled ? styles.starFilled : styles.star} ${interactive ? styles.starInteractive : ''}`}
+        fill={filled || halfFilled ? 'currentColor' : 'none'}
         onClick={() => interactive && onRate && onRate(i)}
         onMouseEnter={() => interactive && setHoverRating(i)}
         onMouseLeave={() => interactive && setHoverRating(0)}
-      >
-        {filled || halfFilled ? '★' : '☆'}
-      </span>
+      />
     );
   }
 
-  return <span className="star-rating">{stars}</span>;
+  return <span className={styles.stars}>{stars}</span>;
 }
 
 export function ToyDetails({ toy, onClose }) {
@@ -76,126 +79,178 @@ export function ToyDetails({ toy, onClose }) {
   const totalReviews = reviews.length + toy.reviewCount;
 
   return (
-    <div className="toy-details-overlay" onClick={onClose}>
-      <div className="toy-details-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="details-close" onClick={onClose}>
-          &times;
-        </button>
+    <AnimatePresence>
+      {toy && (
+        <motion.div
+          className={styles.overlay}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+        >
+          <motion.div
+            className={styles.modal}
+            initial={{ opacity: 0, y: 30, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 30, scale: 0.98 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <motion.button
+              className={styles.closeButton}
+              onClick={onClose}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <X size={20} />
+            </motion.button>
 
-        <div className="details-image" style={{ backgroundImage: `url(${toy.image})` }} />
+            <div className={styles.image} style={{ backgroundImage: `url(${toy.image})` }} />
 
-        <div className="details-content">
-          <div className="details-header">
-            <h2>{toy.name}</h2>
-            <p className="details-price">${toy.price.toFixed(2)}</p>
-          </div>
-
-          <div className="details-rating">
-            <StarRating rating={averageRating} />
-            <span className="rating-text">
-              {averageRating.toFixed(1)} ({totalReviews} reviews)
-            </span>
-          </div>
-
-          <p className="details-description">{toy.fullDescription || toy.description}</p>
-
-          <button className="add-to-cart-btn" onClick={handleAddToCart}>
-            Add to Cart
-          </button>
-
-          <div className="reviews-section">
-            <div className="reviews-header">
-              <h3>Reviews</h3>
-              {isLoggedIn && !userReview && !showReviewForm && (
-                <button className="write-review-btn" onClick={() => setShowReviewForm(true)}>
-                  Write a Review
-                </button>
-              )}
-            </div>
-
-            {!isLoggedIn && (
-              <p className="login-prompt">Sign in to leave a review</p>
-            )}
-
-            {showReviewForm && (
-              <div className="review-form">
-                <div className="form-field">
-                  <label>Your Rating</label>
-                  <StarRating
-                    rating={newRating}
-                    onRate={setNewRating}
-                    interactive={true}
-                    size="large"
-                  />
-                </div>
-                <div className="form-field">
-                  <label>Your Review (optional)</label>
-                  <textarea
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Tell others what you think about this toy..."
-                    rows={3}
-                  />
-                </div>
-                <div className="form-actions">
-                  <button
-                    className="submit-review-btn"
-                    onClick={handleSubmitReview}
-                    disabled={isSubmitting || !newRating}
-                  >
-                    {isSubmitting ? 'Submitting...' : 'Submit Review'}
-                  </button>
-                  <button
-                    className="cancel-review-btn"
-                    onClick={() => {
-                      setShowReviewForm(false);
-                      setNewRating(0);
-                      setNewComment('');
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
+            <div className={styles.content}>
+              <div className={styles.header}>
+                <h2>{toy.name}</h2>
+                <p className={styles.price}>${toy.price.toFixed(2)}</p>
               </div>
-            )}
 
-            {userReview && (
-              <div className="review-item user-review">
-                <div className="review-header">
-                  <span className="reviewer-name">{userReview.username} (You)</span>
-                  <StarRating rating={userReview.rating} size="small" />
-                </div>
-                {userReview.comment && <p className="review-comment">{userReview.comment}</p>}
-                <span className="review-date">
-                  {new Date(userReview.createdAt).toLocaleDateString()}
+              <div className={styles.rating}>
+                <StarRating rating={averageRating} />
+                <span className={styles.ratingText}>
+                  {averageRating.toFixed(1)} ({totalReviews} reviews)
                 </span>
               </div>
-            )}
 
-            <div className="reviews-list">
-              {reviews
-                .filter(r => r.username !== user?.username)
-                .slice(0, 5)
-                .map((review) => (
-                  <div key={review.id} className="review-item">
-                    <div className="review-header">
-                      <span className="reviewer-name">{review.username}</span>
-                      <StarRating rating={review.rating} size="small" />
+              <p className={styles.description}>{toy.fullDescription || toy.description}</p>
+
+              <motion.button
+                className={styles.addToCartBtn}
+                onClick={handleAddToCart}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <ShoppingCart size={20} />
+                Add to Cart
+              </motion.button>
+
+              <div className={styles.reviewsSection}>
+                <div className={styles.reviewsHeader}>
+                  <h3>Reviews</h3>
+                  {isLoggedIn && !userReview && !showReviewForm && (
+                    <motion.button
+                      className={styles.writeReviewBtn}
+                      onClick={() => setShowReviewForm(true)}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Write a Review
+                    </motion.button>
+                  )}
+                </div>
+
+                {!isLoggedIn && (
+                  <p className={styles.loginPrompt}>Sign in to leave a review</p>
+                )}
+
+                <AnimatePresence mode="wait">
+                  {showReviewForm && (
+                    <motion.div
+                      className={styles.reviewForm}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                    >
+                      <div className={styles.formField}>
+                        <label>Your Rating</label>
+                        <StarRating
+                          rating={newRating}
+                          onRate={setNewRating}
+                          interactive={true}
+                          size="large"
+                        />
+                      </div>
+                      <div className={styles.formField}>
+                        <label>Your Review (optional)</label>
+                        <textarea
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          placeholder="Tell others what you think about this toy..."
+                          rows={3}
+                        />
+                      </div>
+                      <div className={styles.formActions}>
+                        <motion.button
+                          className={styles.submitReviewBtn}
+                          onClick={handleSubmitReview}
+                          disabled={isSubmitting || !newRating}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          {isSubmitting ? 'Submitting...' : 'Submit Review'}
+                        </motion.button>
+                        <button
+                          className={styles.cancelReviewBtn}
+                          onClick={() => {
+                            setShowReviewForm(false);
+                            setNewRating(0);
+                            setNewComment('');
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {userReview && (
+                  <motion.div
+                    className={`${styles.reviewItem} ${styles.userReview}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <div className={styles.reviewItemHeader}>
+                      <span className={styles.reviewerName}>{userReview.username} (You)</span>
+                      <StarRating rating={userReview.rating} size="small" />
                     </div>
-                    {review.comment && <p className="review-comment">{review.comment}</p>}
-                    <span className="review-date">
-                      {new Date(review.createdAt).toLocaleDateString()}
+                    {userReview.comment && <p className={styles.reviewComment}>{userReview.comment}</p>}
+                    <span className={styles.reviewDate}>
+                      {new Date(userReview.createdAt).toLocaleDateString()}
                     </span>
-                  </div>
-                ))}
+                  </motion.div>
+                )}
 
-              {reviews.length === 0 && !userReview && (
-                <p className="no-reviews">No reviews yet. Be the first to review!</p>
-              )}
+                <div className={styles.reviewsList}>
+                  {reviews
+                    .filter(r => r.username !== user?.username)
+                    .slice(0, 5)
+                    .map((review, index) => (
+                      <motion.div
+                        key={review.id}
+                        className={styles.reviewItem}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        <div className={styles.reviewItemHeader}>
+                          <span className={styles.reviewerName}>{review.username}</span>
+                          <StarRating rating={review.rating} size="small" />
+                        </div>
+                        {review.comment && <p className={styles.reviewComment}>{review.comment}</p>}
+                        <span className={styles.reviewDate}>
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </span>
+                      </motion.div>
+                    ))}
+
+                  {reviews.length === 0 && !userReview && (
+                    <p className={styles.noReviews}>No reviews yet. Be the first to review!</p>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

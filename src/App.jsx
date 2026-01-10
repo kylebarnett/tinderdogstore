@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ToyCard } from './components/ToyCard';
 import { ToyDetails } from './components/ToyDetails';
 import { Cart } from './components/Cart';
@@ -7,7 +8,7 @@ import { ProfilePage } from './components/Profile/ProfilePage';
 import { useCart } from './context/CartContext';
 import { useUser } from './context/UserContext';
 import { toys } from './data/toys';
-import './App.css';
+import styles from './App.module.css';
 
 function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -40,33 +41,43 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="app loading">
-        <div className="loading-spinner" />
+      <div className={`${styles.app} ${styles.loading}`}>
+        <div className={styles.spinner} />
       </div>
     );
   }
 
   return (
-    <div className="app">
+    <div className={styles.app}>
       <Cart />
 
-      <nav className="app-nav">
+      <nav className={styles.nav}>
         {isLoggedIn ? (
-          <button className="profile-btn" onClick={() => setShowProfile(true)}>
+          <motion.button
+            className={styles.profileBtn}
+            onClick={() => setShowProfile(true)}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.95 }}
+          >
             {dogProfile?.photo ? (
-              <img src={dogProfile.photo} alt={dogProfile.name} className="nav-dog-photo" />
+              <img src={dogProfile.photo} alt={dogProfile.name} className={styles.navDogPhoto} />
             ) : (
-              <span className="nav-avatar">{user.username.charAt(0).toUpperCase()}</span>
+              <span className={styles.navAvatar}>{user.username.charAt(0).toUpperCase()}</span>
             )}
-          </button>
+          </motion.button>
         ) : (
-          <button className="sign-in-btn" onClick={() => setShowAuth(true)}>
+          <motion.button
+            className={styles.signInBtn}
+            onClick={() => setShowAuth(true)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             Sign In
-          </button>
+          </motion.button>
         )}
       </nav>
 
-      <header className="app-header">
+      <header className={styles.header}>
         <h1>Pup Picks</h1>
         {isLoggedIn && dogProfile ? (
           <p>Finding toys for {dogProfile.name}!</p>
@@ -75,29 +86,46 @@ function App() {
         )}
       </header>
 
-      <main className="app-main">
-        {isFinished ? (
-          <div className="finished-message">
-            <h2>That's all the toys!</h2>
-            <p>Check your cart or browse again</p>
-            <button className="reset-button" onClick={handleReset}>
-              Browse Again
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="progress">
-              {currentIndex + 1} / {toys.length}
-            </div>
-            <ToyCard
+      <main className={styles.main}>
+        <AnimatePresence mode="wait">
+          {isFinished ? (
+            <motion.div
+              className={styles.finished}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <h2>That's all the toys!</h2>
+              <p>Check your cart or browse again</p>
+              <motion.button
+                className={styles.resetBtn}
+                onClick={handleReset}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Browse Again
+              </motion.button>
+            </motion.div>
+          ) : (
+            <motion.div
               key={currentToy.id}
-              toy={currentToy}
-              onSwipeLeft={handleSwipeLeft}
-              onSwipeRight={handleSwipeRight}
-              onViewDetails={handleViewDetails}
-            />
-          </>
-        )}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+            >
+              <div className={styles.progress}>
+                {currentIndex + 1} / {toys.length}
+              </div>
+              <ToyCard
+                toy={currentToy}
+                onSwipeLeft={handleSwipeLeft}
+                onSwipeRight={handleSwipeRight}
+                onViewDetails={handleViewDetails}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />

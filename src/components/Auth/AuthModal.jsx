@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 import { useUser } from '../../context/UserContext';
-import './AuthModal.css';
+import styles from './AuthModal.module.css';
 
 export function AuthModal({ isOpen, onClose }) {
   const [mode, setMode] = useState('login');
@@ -11,8 +13,6 @@ export function AuthModal({ isOpen, onClose }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { login, signup, referredBy } = useUser();
-
-  if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,84 +56,134 @@ export function AuthModal({ isOpen, onClose }) {
   };
 
   return (
-    <div className="auth-overlay" onClick={onClose}>
-      <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="auth-close" onClick={onClose}>
-          &times;
-        </button>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className={styles.overlay}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+        >
+          <motion.div
+            className={styles.modal}
+            initial={{ opacity: 0, y: 20, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.98 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <motion.button
+              className={styles.closeButton}
+              onClick={onClose}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <X size={18} />
+            </motion.button>
 
-        <h2>{mode === 'login' ? 'Welcome Back!' : 'Create Account'}</h2>
+            <h2>{mode === 'login' ? 'Welcome Back' : 'Create Account'}</h2>
 
-        {referredBy && mode === 'signup' && (
-          <div className="referral-badge">
-            You were invited by a friend!
-          </div>
-        )}
+            {referredBy && mode === 'signup' && (
+              <motion.div
+                className={styles.referralBadge}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                You were invited by a friend!
+              </motion.div>
+            )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="username">Username</label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username"
-              required
-            />
-          </div>
+            <form onSubmit={handleSubmit}>
+              <div className={styles.formGroup}>
+                <label htmlFor="username">Username</label>
+                <input
+                  type="text"
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter username"
+                  required
+                />
+              </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
-              required
-            />
-          </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="password">Password</label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                  required
+                />
+              </div>
 
-          {mode === 'signup' && (
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm password"
-                required
-              />
+              <AnimatePresence mode="wait">
+                {mode === 'signup' && (
+                  <motion.div
+                    className={styles.formGroup}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                  >
+                    <label htmlFor="confirmPassword">Confirm Password</label>
+                    <input
+                      type="password"
+                      id="confirmPassword"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm password"
+                      required
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <AnimatePresence mode="wait">
+                {error && (
+                  <motion.div
+                    className={styles.error}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                  >
+                    {error}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <motion.button
+                type="submit"
+                className={styles.submit}
+                disabled={isSubmitting}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {isSubmitting ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Sign Up'}
+              </motion.button>
+            </form>
+
+            <div className={styles.switchMode}>
+              {mode === 'login' ? (
+                <>
+                  Don't have an account?{' '}
+                  <button type="button" onClick={switchMode}>
+                    Sign Up
+                  </button>
+                </>
+              ) : (
+                <>
+                  Already have an account?{' '}
+                  <button type="button" onClick={switchMode}>
+                    Sign In
+                  </button>
+                </>
+              )}
             </div>
-          )}
-
-          {error && <div className="auth-error">{error}</div>}
-
-          <button type="submit" className="auth-submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Sign Up'}
-          </button>
-        </form>
-
-        <div className="auth-switch">
-          {mode === 'login' ? (
-            <>
-              Don't have an account?{' '}
-              <button type="button" onClick={switchMode}>
-                Sign Up
-              </button>
-            </>
-          ) : (
-            <>
-              Already have an account?{' '}
-              <button type="button" onClick={switchMode}>
-                Sign In
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Copy, Check, Share2 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { generateShareLink } from '../utils/storage';
-import './ShareInvite.css';
+import styles from './ShareInvite.module.css';
 
 export function ShareInvite() {
   const { user } = useUser();
@@ -15,7 +17,6 @@ export function ShareInvite() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      // Fallback for older browsers
       const textArea = document.createElement('textarea');
       textArea.value = shareLink;
       document.body.appendChild(textArea);
@@ -44,34 +45,66 @@ export function ShareInvite() {
   };
 
   return (
-    <div className="share-invite">
-      <p className="share-description">
+    <div className={styles.container}>
+      <p className={styles.description}>
         Share Pup Picks with your friends and their pups!
       </p>
 
-      <div className="share-link-box">
+      <div className={styles.linkBox}>
         <input
           type="text"
           value={shareLink}
           readOnly
-          className="share-link-input"
+          className={styles.linkInput}
         />
-        <button
-          className={`copy-btn ${copied ? 'copied' : ''}`}
+        <motion.button
+          className={`${styles.copyBtn} ${copied ? styles.copyBtnCopied : ''}`}
           onClick={handleCopy}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
-          {copied ? 'Copied!' : 'Copy'}
-        </button>
+          <AnimatePresence mode="wait">
+            {copied ? (
+              <motion.span
+                key="check"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Check size={16} />
+                Copied
+              </motion.span>
+            ) : (
+              <motion.span
+                key="copy"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Copy size={16} />
+                Copy
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
       </div>
 
-      <div className="share-code">
+      <div className={styles.code}>
         Your referral code: <strong>{user?.referralCode}</strong>
       </div>
 
       {navigator.share && (
-        <button className="share-btn" onClick={handleShare}>
+        <motion.button
+          className={styles.shareBtn}
+          onClick={handleShare}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <Share2 size={18} />
           Share with Friends
-        </button>
+        </motion.button>
       )}
     </div>
   );

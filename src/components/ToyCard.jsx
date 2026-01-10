@@ -1,5 +1,7 @@
-import { useState, useRef } from 'react';
-import './ToyCard.css';
+import { useRef } from 'react';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
+import { Heart, X, Star } from 'lucide-react';
+import styles from './ToyCard.module.css';
 
 function StarRating({ rating }) {
   const stars = [];
@@ -7,69 +9,73 @@ function StarRating({ rating }) {
     const filled = rating >= i;
     const halfFilled = !filled && rating >= i - 0.5;
     stars.push(
-      <span key={i} className={`star ${filled ? 'filled' : ''} ${halfFilled ? 'half' : ''}`}>
-        {filled || halfFilled ? '★' : '☆'}
-      </span>
+      <Star
+        key={i}
+        size={16}
+        className={filled || halfFilled ? styles.starFilled : styles.star}
+        fill={filled || halfFilled ? 'currentColor' : 'none'}
+      />
     );
   }
-  return <span className="star-rating">{stars}</span>;
+  return <span className={styles.stars}>{stars}</span>;
 }
 
 export function ToyCard({ toy, onSwipeLeft, onSwipeRight, onViewDetails }) {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [isLeaving, setIsLeaving] = useState(false);
-  const [leaveDirection, setLeaveDirection] = useState(null);
-  const dragStart = useRef({ x: 0, y: 0 });
   const hasDragged = useRef(false);
-  const cardRef = useRef(null);
+  const isAnimating = useRef(false);
 
-  const SWIPE_THRESHOLD = 100;
-  const DRAG_THRESHOLD = 10;
+  const x = useMotionValue(0);
+  const rotate = useTransform(x, [-300, 300], [-18, 18]);
+  const cardOpacity = useTransform(x, [-300, -150, 0, 150, 300], [0.5, 1, 1, 1, 0.5]);
 
-  const handlePointerDown = (e) => {
-    if (isLeaving) return;
-    setIsDragging(true);
+  // Indicator opacities
+  const likeOpacity = useTransform(x, [0, 80], [0, 1]);
+  const nopeOpacity = useTransform(x, [-80, 0], [1, 0]);
+
+  const handleDragStart = () => {
     hasDragged.current = false;
-    dragStart.current = { x: e.clientX - position.x, y: e.clientY - position.y };
-    cardRef.current?.setPointerCapture(e.pointerId);
   };
 
-  const handlePointerMove = (e) => {
-    if (!isDragging || isLeaving) return;
-    const newX = e.clientX - dragStart.current.x;
-    const newY = e.clientY - dragStart.current.y;
-
-    if (Math.abs(newX) > DRAG_THRESHOLD || Math.abs(newY) > DRAG_THRESHOLD) {
-      hasDragged.current = true;
-    }
-
-    setPosition({ x: newX, y: newY });
+  const handleDrag = () => {
+    hasDragged.current = true;
   };
 
-  const handlePointerUp = (e) => {
-    if (!isDragging || isLeaving) return;
-    setIsDragging(false);
-    cardRef.current?.releasePointerCapture(e.pointerId);
+  const handleDragEnd = (event, info) => {
+    if (isAnimating.current) return;
 
-    if (position.x > SWIPE_THRESHOLD) {
-      triggerSwipe('right');
-    } else if (position.x < -SWIPE_THRESHOLD) {
-      triggerSwipe('left');
+    const swipeThreshold = 100;
+    const velocityThreshold = 500;
+    const offset = info.offset.x;
+    const velocity = info.velocity.x;
+
+    const shouldSwipeRight = offset > swipeThreshold || velocity > velocityThreshold;
+    const shouldSwipeLeft = offset < -swipeThreshold || velocity < -velocityThreshold;
+
+    if (shouldSwipeRight) {
+      isAnimating.current = true;
+      animate(x, 400, { type: 'spring', stiffness: 300, damping: 20 });
+      setTimeout(() => onSwipeRight(toy), 200);
+    } else if (shouldSwipeLeft) {
+      isAnimating.current = true;
+      animate(x, -400, { type: 'spring', stiffness: 300, damping: 20 });
+      setTimeout(() => onSwipeLeft(toy), 200);
     } else {
-      setPosition({ x: 0, y: 0 });
+      animate(x, 0, { type: 'spring', stiffness: 500, damping: 30 });
     }
   };
 
-  const handleClick = () => {
+  const handleTap = () => {
     if (!hasDragged.current && onViewDetails) {
       onViewDetails(toy);
     }
   };
 
-  const triggerSwipe = (direction) => {
-    setIsLeaving(true);
-    setLeaveDirection(direction);
+  const handleButtonSwipe = (direction) => {
+    if (isAnimating.current) return;
+    isAnimating.current = true;
+
+    const targetX = direction === 'right' ? 400 : -400;
+    animate(x, targetX, { type: 'spring', stiffness: 300, damping: 20 });
 
     setTimeout(() => {
       if (direction === 'right') {
@@ -77,77 +83,70 @@ export function ToyCard({ toy, onSwipeLeft, onSwipeRight, onViewDetails }) {
       } else {
         onSwipeLeft(toy);
       }
-    }, 300);
+    }, 200);
   };
-
-  const handleButtonSwipe = (direction) => {
-    if (isLeaving) return;
-    setPosition({ x: direction === 'right' ? 50 : -50, y: 0 });
-    setTimeout(() => triggerSwipe(direction), 50);
-  };
-
-  const rotation = position.x * 0.1;
-  const opacity = Math.max(0, 1 - Math.abs(position.x) / 300);
-
-  const getSwipeIndicator = () => {
-    if (position.x > 30) return 'like';
-    if (position.x < -30) return 'nope';
-    return null;
-  };
-
-  const swipeIndicator = getSwipeIndicator();
 
   return (
-    <div className="toy-card-container">
-      <div
-        ref={cardRef}
-        className={`toy-card ${isDragging ? 'dragging' : ''} ${isLeaving ? `leaving-${leaveDirection}` : ''}`}
-        style={{
-          transform: `translate(${position.x}px, ${position.y}px) rotate(${rotation}deg)`,
-          opacity: isLeaving ? 0 : opacity,
-        }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        onClick={handleClick}
+    <div className={styles.container}>
+      <motion.div
+        className={styles.card}
+        style={{ x, rotate, opacity: cardOpacity }}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.9}
+        onDragStart={handleDragStart}
+        onDrag={handleDrag}
+        onDragEnd={handleDragEnd}
+        onTap={handleTap}
+        whileTap={{ scale: 0.98 }}
       >
-        {swipeIndicator && (
-          <div className={`swipe-indicator ${swipeIndicator}`}>
-            {swipeIndicator === 'like' ? 'ADD TO CART' : 'SKIP'}
-          </div>
-        )}
-        <div className="toy-image" style={{ backgroundImage: `url(${toy.image})` }}>
-          <div className="tap-hint">Tap for details</div>
-        </div>
-        <div className="toy-info">
-          <div className="toy-header">
-            <h2 className="toy-name">{toy.name}</h2>
-            <p className="toy-price">${toy.price.toFixed(2)}</p>
-          </div>
-          <div className="toy-rating">
-            <StarRating rating={toy.rating} />
-            <span className="review-count">({toy.reviewCount})</span>
-          </div>
-          <p className="toy-description">{toy.description}</p>
-        </div>
-      </div>
+        {/* Swipe Indicators */}
+        <motion.div className={styles.likeIndicator} style={{ opacity: likeOpacity }}>
+          <Heart size={20} />
+          <span>Add to Cart</span>
+        </motion.div>
+        <motion.div className={styles.nopeIndicator} style={{ opacity: nopeOpacity }}>
+          <X size={20} />
+          <span>Skip</span>
+        </motion.div>
 
-      <div className="button-row">
-        <button
-          className="swipe-button skip"
+        <div className={styles.imageContainer}>
+          <img src={toy.image} alt={toy.name} className={styles.image} />
+          <div className={styles.tapHint}>Tap for details</div>
+        </div>
+
+        <div className={styles.content}>
+          <div className={styles.header}>
+            <h2 className={styles.name}>{toy.name}</h2>
+            <p className={styles.price}>${toy.price.toFixed(2)}</p>
+          </div>
+          <div className={styles.rating}>
+            <StarRating rating={toy.rating} />
+            <span className={styles.reviewCount}>({toy.reviewCount})</span>
+          </div>
+          <p className={styles.description}>{toy.description}</p>
+        </div>
+      </motion.div>
+
+      <div className={styles.actions}>
+        <motion.button
+          className={`${styles.actionButton} ${styles.skipButton}`}
           onClick={() => handleButtonSwipe('left')}
-          disabled={isLeaving}
+          disabled={isAnimating.current}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.95 }}
         >
-          Skip
-        </button>
-        <button
-          className="swipe-button like"
+          <X size={28} />
+        </motion.button>
+        <motion.button
+          className={`${styles.actionButton} ${styles.likeButton}`}
           onClick={() => handleButtonSwipe('right')}
-          disabled={isLeaving}
+          disabled={isAnimating.current}
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.95 }}
         >
-          Add to Cart
-        </button>
+          <Heart size={28} />
+        </motion.button>
       </div>
     </div>
   );
