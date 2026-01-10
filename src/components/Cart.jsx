@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, X, Trash2 } from 'lucide-react';
+import { ShoppingBag, X, Trash2, Plus, Minus } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import styles from './Cart.module.css';
 
 export function Cart() {
   const [isOpen, setIsOpen] = useState(false);
-  const { items, removeFromCart, clearCart, total, itemCount } = useCart();
+  const { items, removeFromCart, updateQuantity, clearCart, total, itemCount } = useCart();
 
   return (
     <>
@@ -23,6 +23,7 @@ export function Cart() {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+            key={itemCount}
           >
             {itemCount}
           </motion.span>
@@ -72,7 +73,7 @@ export function Cart() {
                       <AnimatePresence mode="popLayout">
                         {items.map((item, index) => (
                           <motion.div
-                            key={`${item.id}-${index}`}
+                            key={item.id}
                             className={styles.item}
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -86,16 +87,27 @@ export function Cart() {
                             />
                             <div className={styles.itemInfo}>
                               <h3>{item.name}</h3>
-                              <p>${item.price.toFixed(2)}</p>
+                              <p>${(item.price * item.quantity).toFixed(2)}</p>
                             </div>
-                            <motion.button
-                              className={styles.removeButton}
-                              onClick={() => removeFromCart(item.id)}
-                              whileHover={{ scale: 1.1 }}
-                              whileTap={{ scale: 0.9 }}
-                            >
-                              <Trash2 size={16} />
-                            </motion.button>
+                            <div className={styles.quantityControls}>
+                              <motion.button
+                                className={styles.quantityBtn}
+                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                              >
+                                {item.quantity === 1 ? <Trash2 size={14} /> : <Minus size={14} />}
+                              </motion.button>
+                              <span className={styles.quantity}>{item.quantity}</span>
+                              <motion.button
+                                className={styles.quantityBtn}
+                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                              >
+                                <Plus size={14} />
+                              </motion.button>
+                            </div>
                           </motion.div>
                         ))}
                       </AnimatePresence>
@@ -103,7 +115,7 @@ export function Cart() {
 
                     <div className={styles.footer}>
                       <div className={styles.total}>
-                        <span>Total</span>
+                        <span>Total ({itemCount} items)</span>
                         <span className={styles.totalAmount}>${total.toFixed(2)}</span>
                       </div>
                       <motion.button

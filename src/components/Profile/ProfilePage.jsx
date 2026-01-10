@@ -1,8 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Dog, Share2, LogOut } from 'lucide-react';
+import { X, Dog, Share2, LogOut, Users } from 'lucide-react';
 import { useUser } from '../../context/UserContext';
 import { DogProfile } from './DogProfile';
 import { ShareInvite } from '../ShareInvite';
+import { FriendActivity } from '../FriendActivity';
 import styles from './ProfilePage.module.css';
 
 export function ProfilePage({ onClose }) {
@@ -64,6 +65,14 @@ export function ProfilePage({ onClose }) {
                 Invite Friends
               </h3>
               <ShareInvite />
+            </section>
+
+            <section className={styles.section}>
+              <h3 className={styles.sectionTitle}>
+                <Users size={14} />
+                Friends & Social
+              </h3>
+              <FriendActivity />
             </section>
           </div>
 

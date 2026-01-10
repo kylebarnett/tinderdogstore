@@ -172,6 +172,48 @@
   background: rgba(225, 112, 85, 0.15);
 }
 
+.quantityControls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.quantityBtn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.quantityBtn:hover {
+  background: var(--color-surface);
+}
+
+.quantityBtn:first-child:hover {
+  color: var(--color-danger);
+}
+
+.quantityBtn:last-child:hover {
+  color: var(--color-success);
+}
+
+.quantity {
+  min-width: 24px;
+  text-align: center;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
 .footer {
   padding: var(--space-6);
   border-top: 1px solid var(--color-border-light);

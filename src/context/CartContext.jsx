@@ -6,28 +6,45 @@ export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
 
   const addToCart = (toy) => {
-    setItems((prev) => [...prev, toy]);
+    setItems((prev) => {
+      const existingIndex = prev.findIndex((item) => item.id === toy.id);
+      if (existingIndex !== -1) {
+        const newItems = [...prev];
+        newItems[existingIndex] = {
+          ...newItems[existingIndex],
+          quantity: newItems[existingIndex].quantity + 1
+        };
+        return newItems;
+      }
+      return [...prev, { ...toy, quantity: 1 }];
+    });
   };
 
   const removeFromCart = (toyId) => {
-    setItems((prev) => {
-      const index = prev.findIndex((item) => item.id === toyId);
-      if (index === -1) return prev;
-      const newItems = [...prev];
-      newItems.splice(index, 1);
-      return newItems;
-    });
+    setItems((prev) => prev.filter((item) => item.id !== toyId));
+  };
+
+  const updateQuantity = (toyId, quantity) => {
+    if (quantity <= 0) {
+      removeFromCart(toyId);
+      return;
+    }
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === toyId ? { ...item, quantity } : item
+      )
+    );
   };
 
   const clearCart = () => {
     setItems([]);
   };
 
-  const total = items.reduce((sum, item) => sum + item.price, 0);
-  const itemCount = items.length;
+  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ items, addToCart, removeFromCart, clearCart, total, itemCount }}>
+    <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, total, itemCount }}>
       {children}
     </CartContext.Provider>
   );
