@@ -3,8 +3,8 @@
   top: var(--space-5);
   left: 20px;
   z-index: 150;
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   border: none;
   border-radius: var(--radius-full);
   background: var(--color-bg-elevated);
@@ -83,8 +83,8 @@
   .toggleBtn {
     left: 16px !important;
     top: 12px;
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
   }
 
   .header {
@@ -98,8 +98,8 @@
 
 @media (max-width: 360px) {
   .toggleBtn {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     left: 12px !important;
   }
 }

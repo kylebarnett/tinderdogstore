@@ -1,12 +1,25 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, X, Trash2, Plus, Minus } from 'lucide-react';
+import { ShoppingBag, X, Trash2, Plus, Minus, CheckCircle, PartyPopper } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import styles from './Cart.module.css';
 
 export function Cart() {
   const [isOpen, setIsOpen] = useState(false);
+  const [confirmedOrder, setConfirmedOrder] = useState(null);
   const { items, removeFromCart, updateQuantity, clearCart, checkout, total, itemCount } = useCart();
+
+  const handleCheckout = () => {
+    const order = checkout();
+    if (order) {
+      setConfirmedOrder(order);
+    }
+  };
+
+  const handleCloseConfirmation = () => {
+    setConfirmedOrder(null);
+    setIsOpen(false);
+  };
 
   return (
     <>
@@ -120,10 +133,7 @@ export function Cart() {
                       </div>
                       <motion.button
                         className={styles.checkoutButton}
-                        onClick={() => {
-                          checkout();
-                          setIsOpen(false);
-                        }}
+                        onClick={handleCheckout}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
@@ -138,6 +148,70 @@ export function Cart() {
               </motion.div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Checkout Confirmation */}
+      <AnimatePresence>
+        {confirmedOrder && (
+          <motion.div
+            className={styles.confirmationOverlay}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleCloseConfirmation}
+          >
+            <motion.div
+              className={styles.confirmationModal}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <motion.div
+                className={styles.confirmationIcon}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: 'spring', stiffness: 400, damping: 15 }}
+              >
+                <PartyPopper size={48} />
+              </motion.div>
+              <h2>Order Confirmed!</h2>
+              <p className={styles.confirmationSubtitle}>
+                Your pup is going to love these toys
+              </p>
+
+              <div className={styles.confirmationDetails}>
+                <div className={styles.confirmationItems}>
+                  {confirmedOrder.items.map((item) => (
+                    <div key={item.id} className={styles.confirmationItem}>
+                      <div
+                        className={styles.confirmationItemImage}
+                        style={{ backgroundImage: `url(${item.image})` }}
+                      />
+                      <span className={styles.confirmationItemName}>{item.name}</span>
+                      <span className={styles.confirmationItemQty}>x{item.quantity}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className={styles.confirmationTotal}>
+                  <span>Total</span>
+                  <span>${confirmedOrder.total.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <motion.button
+                className={styles.confirmationBtn}
+                onClick={handleCloseConfirmation}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <CheckCircle size={18} />
+                Continue Shopping
+              </motion.button>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </>

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, User } from 'lucide-react';
 import { ToyCard } from './components/ToyCard';
 import { ToyDetails } from './components/ToyDetails';
 import { Cart } from './components/Cart';
@@ -108,10 +108,10 @@ function App() {
           <motion.button
             className={styles.signInBtn}
             onClick={() => setShowAuth(true)}
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.95 }}
           >
-            Sign In
+            <User size={24} />
           </motion.button>
         )}
       </nav>
