@@ -16,7 +16,7 @@ const RATING_OPTIONS = [
   { value: 4.5, label: '4.5+' }
 ];
 
-export function ProfilePage({ onClose, filters, onFilterChange }) {
+export function ProfilePage({ onClose, filters, onFilterChange, onViewDetails }) {
   const { user, logout } = useUser();
   const [isEditingDog, setIsEditingDog] = useState(false);
 
@@ -176,7 +176,7 @@ export function ProfilePage({ onClose, filters, onFilterChange }) {
                 <Package size={14} />
                 Purchase History
               </h3>
-              <PurchaseHistory />
+              <PurchaseHistory onViewDetails={onViewDetails} />
             </section>
 
             <section className={styles.section}>

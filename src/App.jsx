@@ -209,6 +209,10 @@ function App() {
           onClose={() => setShowProfile(false)}
           filters={filters}
           onFilterChange={handleFilterChange}
+          onViewDetails={(toy) => {
+            setSelectedToy(toy);
+            setShowProfile(false);
+          }}
         />
       )}
       {selectedToy && <ToyDetails toy={selectedToy} onClose={() => setSelectedToy(null)} />}

@@ -3,7 +3,7 @@ import { ShoppingBag } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import styles from './PurchaseHistory.module.css';
 
-function OrderCard({ order, onReorder }) {
+function OrderCard({ order, onViewDetails }) {
   const { addToCart } = useCart();
   const orderDate = new Date(order.purchasedAt).toLocaleDateString();
 
@@ -25,7 +25,13 @@ function OrderCard({ order, onReorder }) {
       </div>
       <div className={styles.orderItems}>
         {order.items.map((item) => (
-          <div key={item.id} className={styles.orderItem}>
+          <motion.div
+            key={item.id}
+            className={styles.orderItem}
+            onClick={() => onViewDetails?.(item)}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
             <div
               className={styles.itemImage}
               style={{ backgroundImage: `url(${item.image})` }}
@@ -36,7 +42,7 @@ function OrderCard({ order, onReorder }) {
                 ${item.price.toFixed(2)} × {item.quantity}
               </span>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
       <motion.button
@@ -51,7 +57,7 @@ function OrderCard({ order, onReorder }) {
   );
 }
 
-export function PurchaseHistory() {
+export function PurchaseHistory({ onViewDetails }) {
   const { purchaseHistory } = useCart();
 
   if (purchaseHistory.length === 0) {
@@ -67,7 +73,7 @@ export function PurchaseHistory() {
   return (
     <div className={styles.container}>
       {purchaseHistory.map((order) => (
-        <OrderCard key={order.id} order={order} />
+        <OrderCard key={order.id} order={order} onViewDetails={onViewDetails} />
       ))}
     </div>
   );
