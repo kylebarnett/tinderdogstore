@@ -141,3 +141,62 @@
 .switchMode button:hover {
   text-decoration: underline;
 }
+
+.googleButton {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.googleButton:hover {
+  background: var(--color-surface);
+  border-color: var(--color-text-muted);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: var(--space-5) 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.divider span {
+  padding: 0 var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-sm);
+  border: 1px solid rgba(0, 184, 148, 0.2);
+}
+
+.submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
