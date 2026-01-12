@@ -9,13 +9,9 @@ import { ProfilePage } from './components/Profile/ProfilePage';
 import { MatchCelebration } from './components/MatchCelebration';
 import { DailyFeatured } from './components/DailyFeatured';
 import { DEFAULT_FILTERS, applyFilters } from './components/FilterPanel';
-import { StatsPanel, AchievementToast } from './components/StatsPanel';
 import { FriendActivityPanel } from './components/FriendActivityPanel';
-import { ChallengeFAB, ChallengeDrawer, SpinWheel } from './components/Challenges';
 import { useCart } from './context/CartContext';
 import { useUser } from './context/UserContext';
-import { useStats } from './context/StatsContext';
-import { useChallenges } from './context/ChallengesContext';
 import { toys } from './data/toys';
 import { sortToysByMatch, getMatchBadge } from './utils/toyRecommendations';
 import styles from './App.module.css';
@@ -27,16 +23,11 @@ function App() {
   const [selectedToy, setSelectedToy] = useState(null);
   const [swipeHistory, setSwipeHistory] = useState([]);
   const [matchedToy, setMatchedToy] = useState(null);
-  const [showStatsPanel, setShowStatsPanel] = useState(false);
   const [showFriendsPanel, setShowFriendsPanel] = useState(false);
-  const [showChallengeDrawer, setShowChallengeDrawer] = useState(false);
-  const [showSpinWheel, setShowSpinWheel] = useState(false);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
 
   const { addToCart, removeFromCart } = useCart();
   const { user, isLoggedIn, isLoading, dogProfile } = useUser();
-  const { recordSwipe, recordAddToCart, newAchievement, clearNewAchievement } = useStats();
-  const { trackSwipe, trackLike, trackAddToCart, trackViewDetails } = useChallenges();
 
   // Sort and filter toys
   const processedToys = useMemo(() => {
@@ -52,8 +43,6 @@ function App() {
   const handleSwipeLeft = (toy) => {
     setSwipeHistory((prev) => [...prev.slice(-2), { toy, direction: 'left' }]);
     setCurrentIndex((prev) => prev + 1);
-    recordSwipe(false);
-    trackSwipe();
   };
 
   const handleSwipeRight = (toy) => {
@@ -61,10 +50,6 @@ function App() {
     setSwipeHistory((prev) => [...prev.slice(-2), { toy, direction: 'right' }]);
     setCurrentIndex((prev) => prev + 1);
     setMatchedToy(toy);
-    recordSwipe(true);
-    recordAddToCart();
-    trackSwipe();
-    trackAddToCart();
   };
 
   const handleUndo = () => {
@@ -86,7 +71,6 @@ function App() {
 
   const handleViewDetails = (toy) => {
     setSelectedToy(toy);
-    trackViewDetails();
   };
 
   const handleFilterChange = (newFilters) => {
@@ -141,12 +125,6 @@ function App() {
         )}
       </header>
 
-      {/* Stats Panel */}
-      <StatsPanel
-        isOpen={showStatsPanel}
-        onClose={() => setShowStatsPanel(!showStatsPanel)}
-      />
-
       {/* Friends Panel */}
       <FriendActivityPanel
         isOpen={showFriendsPanel}
@@ -161,7 +139,6 @@ function App() {
             onAddToCart={(toy) => {
               addToCart(toy);
               setMatchedToy(toy);
-              recordAddToCart();
             }}
           />
         )}
@@ -240,26 +217,6 @@ function App() {
         toy={matchedToy}
         dogName={dogProfile?.name}
         onComplete={() => setMatchedToy(null)}
-      />
-
-      <AchievementToast
-        achievement={newAchievement}
-        onClose={clearNewAchievement}
-      />
-
-      {/* Daily Challenges */}
-      <ChallengeFAB onClick={() => setShowChallengeDrawer(true)} />
-      <ChallengeDrawer
-        isOpen={showChallengeDrawer}
-        onClose={() => setShowChallengeDrawer(false)}
-        onOpenSpinWheel={() => {
-          setShowChallengeDrawer(false);
-          setShowSpinWheel(true);
-        }}
-      />
-      <SpinWheel
-        isOpen={showSpinWheel}
-        onClose={() => setShowSpinWheel(false)}
       />
     </div>
   );

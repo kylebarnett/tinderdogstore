@@ -1,9 +1,23 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 const CartContext = createContext();
+const PURCHASE_HISTORY_KEY = 'pup_picks_purchase_history';
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
+  const [purchaseHistory, setPurchaseHistory] = useState(() => {
+    try {
+      const stored = localStorage.getItem(PURCHASE_HISTORY_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Persist purchase history to localStorage
+  useEffect(() => {
+    localStorage.setItem(PURCHASE_HISTORY_KEY, JSON.stringify(purchaseHistory));
+  }, [purchaseHistory]);
 
   const addToCart = (toy) => {
     setItems((prev) => {
@@ -40,11 +54,37 @@ export function CartProvider({ children }) {
     setItems([]);
   };
 
+  const checkout = () => {
+    if (items.length === 0) return;
+
+    const order = {
+      id: Date.now(),
+      items: [...items],
+      total,
+      purchasedAt: new Date().toISOString()
+    };
+
+    setPurchaseHistory((prev) => [order, ...prev]);
+    setItems([]);
+
+    return order;
+  };
+
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, total, itemCount }}>
+    <CartContext.Provider value={{
+      items,
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      clearCart,
+      checkout,
+      purchaseHistory,
+      total,
+      itemCount
+    }}>
       {children}
     </CartContext.Provider>
   );

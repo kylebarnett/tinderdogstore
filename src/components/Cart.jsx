@@ -6,7 +6,7 @@ import styles from './Cart.module.css';
 
 export function Cart() {
   const [isOpen, setIsOpen] = useState(false);
-  const { items, removeFromCart, updateQuantity, clearCart, total, itemCount } = useCart();
+  const { items, removeFromCart, updateQuantity, clearCart, checkout, total, itemCount } = useCart();
 
   return (
     <>
@@ -120,6 +120,10 @@ export function Cart() {
                       </div>
                       <motion.button
                         className={styles.checkoutButton}
+                        onClick={() => {
+                          checkout();
+                          setIsOpen(false);
+                        }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >

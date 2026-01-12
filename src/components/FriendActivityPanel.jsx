@@ -12,7 +12,7 @@ export function FriendActivityPanel({ isOpen, onClose }) {
         onClick={onClose}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        style={{ left: isOpen ? '280px' : '76px' }}
+        style={{ left: isOpen ? '280px' : '20px' }}
       >
         <Users size={20} />
       </motion.button>

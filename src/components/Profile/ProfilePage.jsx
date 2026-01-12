@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Dog, Share2, LogOut, SlidersHorizontal, RotateCcw } from 'lucide-react';
+import { X, Dog, Share2, LogOut, SlidersHorizontal, RotateCcw, Package } from 'lucide-react';
 import { useUser } from '../../context/UserContext';
 import { DogProfile } from './DogProfile';
+import { PurchaseHistory } from './PurchaseHistory';
 import { ShareInvite } from '../ShareInvite';
 import { toyCategories } from '../../data/toys';
 import { DEFAULT_FILTERS } from '../FilterPanel';
@@ -169,6 +170,14 @@ export function ProfilePage({ onClose, filters, onFilterChange }) {
               </div>
             </section>
             )}
+
+            <section className={styles.section}>
+              <h3 className={styles.sectionTitle}>
+                <Package size={14} />
+                Purchase History
+              </h3>
+              <PurchaseHistory />
+            </section>
 
             <section className={styles.section}>
               <h3 className={styles.sectionTitle}>

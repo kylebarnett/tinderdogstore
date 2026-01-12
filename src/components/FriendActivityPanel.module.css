@@ -1,7 +1,7 @@
 .toggleBtn {
   position: fixed;
   top: var(--space-5);
-  left: 76px;
+  left: 20px;
   z-index: 150;
   width: 48px;
   height: 48px;
@@ -81,7 +81,7 @@
   }
 
   .toggleBtn {
-    left: 64px !important;
+    left: 16px !important;
     top: 12px;
     width: 44px;
     height: 44px;
@@ -100,6 +100,6 @@
   .toggleBtn {
     width: 40px;
     height: 40px;
-    left: 58px !important;
+    left: 12px !important;
   }
 }
