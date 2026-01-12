@@ -126,3 +126,177 @@
   background: rgba(225, 112, 85, 0.12);
   border-color: rgba(225, 112, 85, 0.2);
 }
+
+/* Filter Styles */
+.filterContent {
+  padding: var(--space-4) var(--space-6);
+}
+
+.filterSection {
+  margin-bottom: var(--space-5);
+}
+
+.filterSection:last-of-type {
+  margin-bottom: 0;
+}
+
+.filterLabel {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.chipGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.chip:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.chipActive {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}
+
+.chipActive:hover {
+  background: var(--color-accent);
+  color: white;
+}
+
+.dualRangeContainer {
+  position: relative;
+  height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.dualRangeTrack {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--color-surface);
+  border-radius: var(--radius-full);
+  pointer-events: none;
+}
+
+.dualRangeFill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: var(--color-accent);
+  border-radius: var(--radius-full);
+}
+
+.dualRangeInput {
+  position: absolute;
+  width: 100%;
+  height: 6px;
+  background: transparent;
+  appearance: none;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.dualRangeInput::-webkit-slider-thumb {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+  border: 3px solid white;
+  transition: transform 0.15s ease;
+}
+
+.dualRangeInput::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.dualRangeInput::-webkit-slider-thumb:active {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dualRangeInput::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+  border: 3px solid white;
+}
+
+.ratingGrid {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.ratingBtn {
+  flex: 1;
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.ratingBtn:hover {
+  border-color: var(--color-accent);
+}
+
+.ratingBtnActive {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}
+
+.clearFiltersBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  margin-top: var(--space-4);
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.clearFiltersBtn:hover {
+  background: var(--color-border);
+  color: var(--color-danger);
+}

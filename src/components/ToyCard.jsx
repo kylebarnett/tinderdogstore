@@ -1,7 +1,21 @@
 import { useRef } from 'react';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
-import { Heart, X, Star } from 'lucide-react';
+import { Heart, X, Star, Circle, Bone, Target, Puzzle, Hand } from 'lucide-react';
 import styles from './ToyCard.module.css';
+
+const DURABILITY_COLORS = {
+  gentle: '#00B894',
+  moderate: '#FDCB6E',
+  aggressive: '#E17055',
+  destroyer: '#D63031'
+};
+
+const PLAY_STYLE_ICONS = {
+  fetch: Target,
+  tug: Hand,
+  cuddle: Heart,
+  puzzle: Puzzle
+};
 
 function StarRating({ rating }) {
   const stars = [];
@@ -20,7 +34,7 @@ function StarRating({ rating }) {
   return <span className={styles.stars}>{stars}</span>;
 }
 
-export function ToyCard({ toy, onSwipeLeft, onSwipeRight, onViewDetails }) {
+export function ToyCard({ toy, matchBadge, onSwipeLeft, onSwipeRight, onViewDetails }) {
   const hasDragged = useRef(false);
   const isAnimating = useRef(false);
 
@@ -58,7 +72,7 @@ export function ToyCard({ toy, onSwipeLeft, onSwipeRight, onViewDetails }) {
     } else if (shouldSwipeLeft) {
       isAnimating.current = true;
       animate(x, -400, { type: 'spring', stiffness: 300, damping: 20 });
-      setTimeout(() => onSwipeLeft(toy), 200);
+      setTimeout(() => onSwipeLeft(toy), 200); // Now passes toy for undo tracking
     } else {
       animate(x, 0, { type: 'spring', stiffness: 500, damping: 30 });
     }
@@ -81,7 +95,7 @@ export function ToyCard({ toy, onSwipeLeft, onSwipeRight, onViewDetails }) {
       if (direction === 'right') {
         onSwipeRight(toy);
       } else {
-        onSwipeLeft(toy);
+        onSwipeLeft(toy); // Now passes toy for undo tracking
       }
     }, 200);
   };
@@ -112,6 +126,11 @@ export function ToyCard({ toy, onSwipeLeft, onSwipeRight, onViewDetails }) {
 
         <div className={styles.imageContainer}>
           <img src={toy.image} alt={toy.name} className={styles.image} />
+          {matchBadge && (
+            <div className={`${styles.matchBadge} ${styles[matchBadge.type]}`}>
+              {matchBadge.label}
+            </div>
+          )}
           <div className={styles.tapHint}>Tap for details</div>
         </div>
 
@@ -125,6 +144,51 @@ export function ToyCard({ toy, onSwipeLeft, onSwipeRight, onViewDetails }) {
             <span className={styles.reviewCount}>({toy.reviewCount})</span>
           </div>
           <p className={styles.description}>{toy.description}</p>
+
+          {/* Indicator Badges */}
+          <div className={styles.indicators}>
+            {/* Durability */}
+            {toy.durability && (
+              <div
+                className={styles.indicator}
+                style={{ '--indicator-color': DURABILITY_COLORS[toy.durability] }}
+                title={`Durability: ${toy.durability}`}
+              >
+                <span
+                  className={styles.durabilityDot}
+                  style={{ background: DURABILITY_COLORS[toy.durability] }}
+                />
+                <span className={styles.indicatorLabel}>
+                  {toy.durability.charAt(0).toUpperCase() + toy.durability.slice(1)}
+                </span>
+              </div>
+            )}
+
+            {/* Play Styles */}
+            {toy.playStyles?.map(style => {
+              const Icon = PLAY_STYLE_ICONS[style];
+              return Icon ? (
+                <div key={style} className={styles.indicator} title={`Play style: ${style}`}>
+                  <Icon size={14} />
+                  <span className={styles.indicatorLabel}>{style}</span>
+                </div>
+              ) : null;
+            })}
+
+            {/* Sizes */}
+            {toy.sizes && (
+              <div className={styles.sizeIndicator} title="Compatible sizes">
+                {['small', 'medium', 'large', 'giant'].map(size => (
+                  <span
+                    key={size}
+                    className={`${styles.sizeDot} ${toy.sizes.includes(size) ? styles.sizeActive : ''}`}
+                  >
+                    {size[0].toUpperCase()}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </motion.div>
 

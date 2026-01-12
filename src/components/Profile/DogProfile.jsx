@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Camera } from 'lucide-react';
 import { useUser } from '../../context/UserContext';
 import { fileToBase64 } from '../../utils/storage';
-import { toyCategories } from '../../data/toys';
 import styles from './DogProfile.module.css';
 
 const DOG_SIZES = [
@@ -13,6 +12,20 @@ const DOG_SIZES = [
   { id: 'giant', label: 'Giant', description: '90+ lbs' }
 ];
 
+const CHEW_STRENGTHS = [
+  { id: 'gentle', label: 'Gentle', description: 'Nibbles softly' },
+  { id: 'moderate', label: 'Moderate', description: 'Normal chewer' },
+  { id: 'aggressive', label: 'Aggressive', description: 'Destroys toys fast' },
+  { id: 'destroyer', label: 'Destroyer', description: 'Nothing survives' }
+];
+
+const PLAY_STYLES = [
+  { id: 'fetch', label: 'Fetch', description: 'Loves to chase & retrieve' },
+  { id: 'tug', label: 'Tug', description: 'Loves tug-of-war' },
+  { id: 'cuddle', label: 'Cuddle', description: 'Snuggles with toys' },
+  { id: 'puzzle', label: 'Puzzle', description: 'Loves treat puzzles' }
+];
+
 const ACTIVITY_LEVELS = [
   { id: 'low', label: 'Low', description: 'Couch potato' },
   { id: 'moderate', label: 'Moderate', description: 'Daily walks' },
@@ -20,14 +33,15 @@ const ACTIVITY_LEVELS = [
   { id: 'very-high', label: 'Very High', description: 'Endless energy' }
 ];
 
-export function DogProfile() {
+export function DogProfile({ onEditingChange }) {
   const { dogProfile, saveDogProfile } = useUser();
   const [isEditing, setIsEditing] = useState(!dogProfile);
   const [formData, setFormData] = useState({
     name: dogProfile?.name || '',
     size: dogProfile?.size || '',
+    chewStrength: dogProfile?.chewStrength || '',
+    playStyle: dogProfile?.playStyle || '',
     activityLevel: dogProfile?.activityLevel || '',
-    toyPreferences: dogProfile?.toyPreferences || [],
     photo: dogProfile?.photo || ''
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -35,15 +49,6 @@ export function DogProfile() {
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleToyPreferenceToggle = (categoryId) => {
-    setFormData((prev) => {
-      const prefs = prev.toyPreferences.includes(categoryId)
-        ? prev.toyPreferences.filter((p) => p !== categoryId)
-        : [...prev.toyPreferences, categoryId];
-      return { ...prev, toyPreferences: prefs };
-    });
   };
 
   const handlePhotoUpload = async (e) => {
@@ -73,6 +78,7 @@ export function DogProfile() {
     try {
       saveDogProfile(formData);
       setIsEditing(false);
+      onEditingChange?.(false);
     } finally {
       setIsSaving(false);
     }
@@ -80,6 +86,7 @@ export function DogProfile() {
 
   const handleEdit = () => {
     setIsEditing(true);
+    onEditingChange?.(true);
   };
 
   if (!isEditing && dogProfile) {
@@ -104,20 +111,22 @@ export function DogProfile() {
               <span>{DOG_SIZES.find((s) => s.id === dogProfile.size)?.label}</span>
             </div>
           )}
+          {dogProfile.chewStrength && (
+            <div className={styles.detail}>
+              <span className={styles.detailLabel}>Chewer</span>
+              <span>{CHEW_STRENGTHS.find((c) => c.id === dogProfile.chewStrength)?.label}</span>
+            </div>
+          )}
+          {dogProfile.playStyle && (
+            <div className={styles.detail}>
+              <span className={styles.detailLabel}>Plays</span>
+              <span>{PLAY_STYLES.find((p) => p.id === dogProfile.playStyle)?.label}</span>
+            </div>
+          )}
           {dogProfile.activityLevel && (
             <div className={styles.detail}>
               <span className={styles.detailLabel}>Activity</span>
               <span>{ACTIVITY_LEVELS.find((a) => a.id === dogProfile.activityLevel)?.label}</span>
-            </div>
-          )}
-          {dogProfile.toyPreferences?.length > 0 && (
-            <div className={styles.detail}>
-              <span className={styles.detailLabel}>Loves</span>
-              <span>
-                {dogProfile.toyPreferences
-                  .map((p) => toyCategories.find((c) => c.id === p)?.label)
-                  .join(', ')}
-              </span>
             </div>
           )}
         </div>
@@ -193,6 +202,42 @@ export function DogProfile() {
       </div>
 
       <div className={styles.formField}>
+        <label>Chew Strength</label>
+        <div className={styles.optionGrid}>
+          {CHEW_STRENGTHS.map((strength) => (
+            <motion.button
+              key={strength.id}
+              type="button"
+              className={`${styles.optionBtn} ${formData.chewStrength === strength.id ? styles.optionBtnSelected : ''}`}
+              onClick={() => handleChange('chewStrength', strength.id)}
+              whileTap={{ scale: 0.98 }}
+            >
+              <span className={styles.optionLabel}>{strength.label}</span>
+              <span className={styles.optionDesc}>{strength.description}</span>
+            </motion.button>
+          ))}
+        </div>
+      </div>
+
+      <div className={styles.formField}>
+        <label>Play Style</label>
+        <div className={styles.optionGrid}>
+          {PLAY_STYLES.map((style) => (
+            <motion.button
+              key={style.id}
+              type="button"
+              className={`${styles.optionBtn} ${formData.playStyle === style.id ? styles.optionBtnSelected : ''}`}
+              onClick={() => handleChange('playStyle', style.id)}
+              whileTap={{ scale: 0.98 }}
+            >
+              <span className={styles.optionLabel}>{style.label}</span>
+              <span className={styles.optionDesc}>{style.description}</span>
+            </motion.button>
+          ))}
+        </div>
+      </div>
+
+      <div className={styles.formField}>
         <label>Activity Level</label>
         <div className={styles.optionGrid}>
           {ACTIVITY_LEVELS.map((level) => (
@@ -206,25 +251,6 @@ export function DogProfile() {
               <span className={styles.optionLabel}>{level.label}</span>
               <span className={styles.optionDesc}>{level.description}</span>
             </motion.button>
-          ))}
-        </div>
-      </div>
-
-      <div className={styles.formField}>
-        <label>Favorite Toy Types</label>
-        <div className={styles.checkboxGrid}>
-          {toyCategories.map((cat) => (
-            <label
-              key={cat.id}
-              className={`${styles.checkboxItem} ${formData.toyPreferences.includes(cat.id) ? styles.checkboxItemChecked : ''}`}
-            >
-              <input
-                type="checkbox"
-                checked={formData.toyPreferences.includes(cat.id)}
-                onChange={() => handleToyPreferenceToggle(cat.id)}
-              />
-              <span>{cat.label}</span>
-            </label>
           ))}
         </div>
       </div>
@@ -246,11 +272,13 @@ export function DogProfile() {
               setFormData({
                 name: dogProfile.name,
                 size: dogProfile.size,
+                chewStrength: dogProfile.chewStrength,
+                playStyle: dogProfile.playStyle,
                 activityLevel: dogProfile.activityLevel,
-                toyPreferences: dogProfile.toyPreferences,
                 photo: dogProfile.photo
               });
               setIsEditing(false);
+              onEditingChange?.(false);
             }}
           >
             Cancel

@@ -265,3 +265,118 @@
 .clearButton:hover {
   color: var(--color-danger);
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 480px) {
+  .cartButton {
+    top: 12px;
+    right: 12px;
+    width: 48px;
+    height: 48px;
+  }
+
+  .badge {
+    min-width: 20px;
+    height: 20px;
+    font-size: 11px;
+  }
+
+  .panel {
+    max-width: 100%;
+  }
+
+  .header {
+    padding: var(--space-4);
+  }
+
+  .header h2 {
+    font-size: var(--font-size-lg);
+  }
+
+  .closeButton {
+    width: 36px;
+    height: 36px;
+  }
+
+  .empty {
+    padding: var(--space-6);
+  }
+
+  .items {
+    padding: var(--space-3);
+  }
+
+  .item {
+    padding: var(--space-2);
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+  }
+
+  .itemImage {
+    width: 56px;
+    height: 56px;
+  }
+
+  .itemInfo h3 {
+    font-size: var(--font-size-xs);
+  }
+
+  .itemInfo p {
+    font-size: var(--font-size-xs);
+  }
+
+  .quantityControls {
+    gap: var(--space-1);
+  }
+
+  .quantityBtn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .quantity {
+    min-width: 20px;
+    font-size: var(--font-size-xs);
+  }
+
+  .footer {
+    padding: var(--space-4);
+  }
+
+  .total {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--space-3);
+  }
+
+  .totalAmount {
+    font-size: var(--font-size-lg);
+  }
+
+  .checkoutButton {
+    padding: var(--space-3);
+    font-size: var(--font-size-sm);
+    min-height: 48px;
+  }
+
+  .clearButton {
+    padding: var(--space-2);
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 360px) {
+  .cartButton {
+    width: 44px;
+    height: 44px;
+  }
+
+  .itemImage {
+    width: 48px;
+    height: 48px;
+  }
+
+  .quantityBtn {
+    width: 28px;
+    height: 28px;
+  }
+}

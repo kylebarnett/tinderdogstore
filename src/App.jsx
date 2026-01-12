@@ -1,13 +1,23 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { RotateCcw } from 'lucide-react';
 import { ToyCard } from './components/ToyCard';
 import { ToyDetails } from './components/ToyDetails';
 import { Cart } from './components/Cart';
 import { AuthModal } from './components/Auth/AuthModal';
 import { ProfilePage } from './components/Profile/ProfilePage';
+import { MatchCelebration } from './components/MatchCelebration';
+import { DailyFeatured } from './components/DailyFeatured';
+import { DEFAULT_FILTERS, applyFilters } from './components/FilterPanel';
+import { StatsPanel, AchievementToast } from './components/StatsPanel';
+import { FriendActivityPanel } from './components/FriendActivityPanel';
+import { ChallengeFAB, ChallengeDrawer, SpinWheel } from './components/Challenges';
 import { useCart } from './context/CartContext';
 import { useUser } from './context/UserContext';
+import { useStats } from './context/StatsContext';
+import { useChallenges } from './context/ChallengesContext';
 import { toys } from './data/toys';
+import { sortToysByMatch, getMatchBadge } from './utils/toyRecommendations';
 import styles from './App.module.css';
 
 function App() {
@@ -15,28 +25,73 @@ function App() {
   const [showAuth, setShowAuth] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [selectedToy, setSelectedToy] = useState(null);
+  const [swipeHistory, setSwipeHistory] = useState([]);
+  const [matchedToy, setMatchedToy] = useState(null);
+  const [showStatsPanel, setShowStatsPanel] = useState(false);
+  const [showFriendsPanel, setShowFriendsPanel] = useState(false);
+  const [showChallengeDrawer, setShowChallengeDrawer] = useState(false);
+  const [showSpinWheel, setShowSpinWheel] = useState(false);
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
 
-  const { addToCart } = useCart();
+  const { addToCart, removeFromCart } = useCart();
   const { user, isLoggedIn, isLoading, dogProfile } = useUser();
+  const { recordSwipe, recordAddToCart, newAchievement, clearNewAchievement } = useStats();
+  const { trackSwipe, trackLike, trackAddToCart, trackViewDetails } = useChallenges();
 
-  const currentToy = toys[currentIndex];
-  const isFinished = currentIndex >= toys.length;
+  // Sort and filter toys
+  const processedToys = useMemo(() => {
+    const sorted = sortToysByMatch(toys, dogProfile);
+    return applyFilters(sorted, filters);
+  }, [dogProfile, filters]);
 
-  const handleSwipeLeft = () => {
+  const currentToy = processedToys[currentIndex];
+  const isFinished = currentIndex >= processedToys.length;
+  const matchBadge = currentToy ? getMatchBadge(currentToy, dogProfile) : null;
+  const canUndo = swipeHistory.length > 0;
+
+  const handleSwipeLeft = (toy) => {
+    setSwipeHistory((prev) => [...prev.slice(-2), { toy, direction: 'left' }]);
     setCurrentIndex((prev) => prev + 1);
+    recordSwipe(false);
+    trackSwipe();
   };
 
   const handleSwipeRight = (toy) => {
     addToCart(toy);
+    setSwipeHistory((prev) => [...prev.slice(-2), { toy, direction: 'right' }]);
     setCurrentIndex((prev) => prev + 1);
+    setMatchedToy(toy);
+    recordSwipe(true);
+    recordAddToCart();
+    trackSwipe();
+    trackAddToCart();
+  };
+
+  const handleUndo = () => {
+    if (swipeHistory.length === 0) return;
+
+    const lastSwipe = swipeHistory[swipeHistory.length - 1];
+    setSwipeHistory((prev) => prev.slice(0, -1));
+    setCurrentIndex((prev) => prev - 1);
+
+    if (lastSwipe.direction === 'right') {
+      removeFromCart(lastSwipe.toy.id);
+    }
   };
 
   const handleReset = () => {
     setCurrentIndex(0);
+    setSwipeHistory([]);
   };
 
   const handleViewDetails = (toy) => {
     setSelectedToy(toy);
+    trackViewDetails();
+  };
+
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+    setCurrentIndex(0);
   };
 
   if (isLoading) {
@@ -86,7 +141,31 @@ function App() {
         )}
       </header>
 
+      {/* Stats Panel */}
+      <StatsPanel
+        isOpen={showStatsPanel}
+        onClose={() => setShowStatsPanel(!showStatsPanel)}
+      />
+
+      {/* Friends Panel */}
+      <FriendActivityPanel
+        isOpen={showFriendsPanel}
+        onClose={() => setShowFriendsPanel(!showFriendsPanel)}
+      />
+
       <main className={styles.main}>
+        {!isFinished && (
+          <DailyFeatured
+            toys={processedToys}
+            dogName={dogProfile?.name}
+            onAddToCart={(toy) => {
+              addToCart(toy);
+              setMatchedToy(toy);
+              recordAddToCart();
+            }}
+          />
+        )}
+
         <AnimatePresence mode="wait">
           {isFinished ? (
             <motion.div
@@ -114,11 +193,30 @@ function App() {
               exit={{ opacity: 0, scale: 0.95 }}
               style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
             >
-              <div className={styles.progress}>
-                {currentIndex + 1} / {toys.length}
+              <div className={styles.progressRow}>
+                <div className={styles.progress}>
+                  {currentIndex + 1} / {processedToys.length}
+                </div>
+                <AnimatePresence>
+                  {canUndo && (
+                    <motion.button
+                      className={styles.undoBtn}
+                      onClick={handleUndo}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <RotateCcw size={16} />
+                      Undo
+                    </motion.button>
+                  )}
+                </AnimatePresence>
               </div>
               <ToyCard
                 toy={currentToy}
+                matchBadge={matchBadge}
                 onSwipeLeft={handleSwipeLeft}
                 onSwipeRight={handleSwipeRight}
                 onViewDetails={handleViewDetails}
@@ -129,8 +227,40 @@ function App() {
       </main>
 
       <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
-      {showProfile && <ProfilePage onClose={() => setShowProfile(false)} />}
+      {showProfile && (
+        <ProfilePage
+          onClose={() => setShowProfile(false)}
+          filters={filters}
+          onFilterChange={handleFilterChange}
+        />
+      )}
       {selectedToy && <ToyDetails toy={selectedToy} onClose={() => setSelectedToy(null)} />}
+
+      <MatchCelebration
+        toy={matchedToy}
+        dogName={dogProfile?.name}
+        onComplete={() => setMatchedToy(null)}
+      />
+
+      <AchievementToast
+        achievement={newAchievement}
+        onClose={clearNewAchievement}
+      />
+
+      {/* Daily Challenges */}
+      <ChallengeFAB onClick={() => setShowChallengeDrawer(true)} />
+      <ChallengeDrawer
+        isOpen={showChallengeDrawer}
+        onClose={() => setShowChallengeDrawer(false)}
+        onOpenSpinWheel={() => {
+          setShowChallengeDrawer(false);
+          setShowSpinWheel(true);
+        }}
+      />
+      <SpinWheel
+        isOpen={showSpinWheel}
+        onClose={() => setShowSpinWheel(false)}
+      />
     </div>
   );
 }

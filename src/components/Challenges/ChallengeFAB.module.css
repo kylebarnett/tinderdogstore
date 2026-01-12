@@ -1,0 +1,90 @@
+.fab {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #8B5CF6, #6366F1);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.fab:hover {
+  box-shadow: 0 6px 24px rgba(139, 92, 246, 0.5);
+}
+
+.fab.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 30px rgba(139, 92, 246, 0.7), 0 0 0 8px rgba(139, 92, 246, 0.1);
+  }
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  background: var(--color-danger);
+  color: white;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+
+.spinBadge {
+  background: linear-gradient(135deg, #F59E0B, #EF4444);
+  animation: spinPulse 1.5s infinite;
+}
+
+@keyframes spinPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@media (max-width: 480px) {
+  .fab {
+    bottom: var(--space-4);
+    right: var(--space-4);
+    width: 52px;
+    height: 52px;
+  }
+
+  .badge {
+    min-width: 20px;
+    height: 20px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 360px) {
+  .fab {
+    bottom: var(--space-3);
+    right: var(--space-3);
+    width: 48px;
+    height: 48px;
+  }
+}

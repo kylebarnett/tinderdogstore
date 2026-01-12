@@ -51,6 +51,44 @@
   font-weight: var(--font-weight-medium);
 }
 
+/* Match badges based on dog profile */
+.matchBadge {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  z-index: 5;
+}
+
+.matchBadge.perfect {
+  background: linear-gradient(135deg, #00B894, #00CEC9);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 184, 148, 0.4);
+}
+
+.matchBadge.great {
+  background: var(--color-success);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 184, 148, 0.3);
+}
+
+.matchBadge.good {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.matchBadge.warning {
+  background: #FFF3CD;
+  color: #856404;
+  border: 1px solid #FFEEBA;
+}
+
 .content {
   padding: var(--space-6);
 }
@@ -107,6 +145,66 @@
   color: var(--color-text-secondary);
   line-height: var(--line-height-relaxed);
   font-size: var(--font-size-sm);
+}
+
+/* Indicator Badges */
+.indicators {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--color-surface);
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.durabilityDot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+.indicatorLabel {
+  text-transform: capitalize;
+}
+
+.sizeIndicator {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  background: var(--color-surface);
+  border-radius: var(--radius-full);
+  margin-left: auto;
+}
+
+.sizeDot {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-full);
+  opacity: 0.4;
+}
+
+.sizeDot.sizeActive {
+  background: var(--color-accent);
+  color: white;
+  opacity: 1;
 }
 
 /* Swipe Indicators */
@@ -183,4 +281,137 @@
 .actionButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 480px) {
+  .container {
+    gap: var(--space-4);
+    max-width: 100%;
+  }
+
+  .card {
+    border-radius: var(--radius-lg);
+  }
+
+  .imageContainer {
+    aspect-ratio: 4/3;
+  }
+
+  .tapHint {
+    padding: var(--space-1) var(--space-3);
+    font-size: 10px;
+  }
+
+  .matchBadge {
+    top: var(--space-2);
+    left: var(--space-2);
+    padding: var(--space-1) var(--space-2);
+    font-size: 10px;
+  }
+
+  .content {
+    padding: var(--space-4);
+  }
+
+  .name {
+    font-size: var(--font-size-lg);
+  }
+
+  .price {
+    font-size: var(--font-size-base);
+  }
+
+  .rating {
+    margin-bottom: var(--space-2);
+  }
+
+  .stars {
+    gap: 1px;
+  }
+
+  .reviewCount {
+    font-size: var(--font-size-xs);
+  }
+
+  .description {
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-normal);
+  }
+
+  .indicators {
+    gap: var(--space-1);
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
+  }
+
+  .indicator {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+
+  .sizeDot {
+    width: 16px;
+    height: 16px;
+    font-size: 9px;
+  }
+
+  .likeIndicator,
+  .nopeIndicator {
+    top: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-xs);
+  }
+
+  .likeIndicator {
+    right: var(--space-3);
+  }
+
+  .nopeIndicator {
+    left: var(--space-3);
+  }
+
+  .actions {
+    gap: var(--space-6);
+  }
+
+  .actionButton {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+@media (max-width: 360px) {
+  .content {
+    padding: var(--space-3);
+  }
+
+  .name {
+    font-size: var(--font-size-base);
+  }
+
+  .description {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .actionButton {
+    width: 52px;
+    height: 52px;
+  }
+}
+
+/* Touch-friendly: ensure minimum tap targets */
+@media (hover: none) and (pointer: coarse) {
+  .actionButton {
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .indicator {
+    min-height: 32px;
+    padding: 6px 10px;
+  }
 }
