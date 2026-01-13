@@ -67,6 +67,99 @@
   box-shadow: var(--shadow-md);
 }
 
+.usernameRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+.usernameRow h2 {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.usernameEdit {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.usernameInput {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  width: 200px;
+}
+
+.usernameInput:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.usernameInput::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.usernameEditBtn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: var(--radius-full);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text-inverse);
+  transition: background var(--transition-fast);
+}
+
+.usernameEditBtn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.usernameEditBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.usernameEditBtn.saveBtn {
+  background: rgba(76, 175, 80, 0.3);
+}
+
+.usernameEditBtn.saveBtn:hover {
+  background: rgba(76, 175, 80, 0.5);
+}
+
+.savedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  background: rgba(76, 175, 80, 0.3);
+  border-radius: var(--radius-full);
+  color: white;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+}
+
 .header h2 {
   margin: 0 0 var(--space-1) 0;
   font-size: var(--font-size-2xl);

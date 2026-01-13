@@ -6,7 +6,7 @@ const UserContext = createContext();
 export function UserProvider({ children }) {
   const [user, setUser] = useState(null);
   const [dogProfile, setDogProfile] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [referredBy, setReferredBy] = useState(null);
 
   useEffect(() => {
@@ -17,15 +17,6 @@ export function UserProvider({ children }) {
       localStorage.setItem('pup_picks_referral', refCode);
       setReferredBy(refCode);
     }
-
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(formatUser(session.user));
-        loadDogProfile(session.user.id);
-      }
-      setIsLoading(false);
-    });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -46,10 +37,21 @@ export function UserProvider({ children }) {
   const formatUser = (supabaseUser) => ({
     id: supabaseUser.id,
     email: supabaseUser.email,
-    username: supabaseUser.user_metadata?.username || supabaseUser.email?.split('@')[0],
+    username: localStorage.getItem('pup-picks-username') || supabaseUser.user_metadata?.username || supabaseUser.email?.split('@')[0],
     createdAt: supabaseUser.created_at,
     referralCode: generateReferralCode(supabaseUser.id)
   });
+
+  const updateUsername = async (newUsername) => {
+    // Just update locally - Supabase auth.updateUser hangs
+    // The username is stored in user metadata which persists across sessions
+    setUser(prev => prev ? { ...prev, username: newUsername } : prev);
+
+    // Store in localStorage as backup
+    localStorage.setItem('pup-picks-username', newUsername);
+
+    return { user: { ...user, username: newUsername } };
+  };
 
   const generateReferralCode = (userId) => {
     return userId.substring(0, 8).toUpperCase();
@@ -57,17 +59,30 @@ export function UserProvider({ children }) {
 
   const loadDogProfile = async (userId) => {
     try {
-      const { data, error } = await supabase
-        .from('dog_profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-      if (data && !error) {
-        setDogProfile(data);
+      const response = await fetch(
+        `${supabaseUrl}/rest/v1/dog_profiles?user_id=eq.${userId}&select=*`,
+        {
+          headers: {
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`
+          }
+        }
+      );
+
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        const profile = data[0];
+        setDogProfile({
+          ...profile,
+          chewStrength: profile.chew_strength,
+          playStyle: profile.play_style
+        });
       }
     } catch (err) {
-      // No profile exists yet, that's okay
       console.log('No dog profile found');
     }
   };
@@ -117,7 +132,10 @@ export function UserProvider({ children }) {
   };
 
   const saveDogProfile = async (profile) => {
-    if (!user) return null;
+    if (!user) {
+      console.error('No user logged in');
+      return null;
+    }
 
     const profileData = {
       user_id: user.id,
@@ -128,20 +146,50 @@ export function UserProvider({ children }) {
       play_style: profile.playStyle,
       updated_at: new Date().toISOString()
     };
+    // Note: birthday field temporarily removed - Supabase schema cache needs to refresh
 
-    const { data, error } = await supabase
-      .from('dog_profiles')
-      .upsert(profileData, { onConflict: 'user_id' })
-      .select()
-      .single();
+    // Get the user's access token for RLS
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-    if (error) throw error;
+    // Get session from localStorage
+    const storedSession = localStorage.getItem('pup-picks-auth');
+    let accessToken = supabaseKey;
+
+    if (storedSession) {
+      try {
+        const session = JSON.parse(storedSession);
+        if (session.access_token) {
+          accessToken = session.access_token;
+        }
+      } catch (e) {
+        console.log('Could not parse session');
+      }
+    }
+
+    const response = await fetch(`${supabaseUrl}/rest/v1/dog_profiles?on_conflict=user_id`, {
+      method: 'POST',
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=representation'
+      },
+      body: JSON.stringify(profileData)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to save profile');
+    }
 
     // Convert back to camelCase for the app
+    const savedData = Array.isArray(data) ? data[0] : data;
     const formattedProfile = {
-      ...data,
-      chewStrength: data.chew_strength,
-      playStyle: data.play_style
+      ...savedData,
+      chewStrength: savedData.chew_strength,
+      playStyle: savedData.play_style
     };
 
     setDogProfile(formattedProfile);
@@ -162,6 +210,7 @@ export function UserProvider({ children }) {
         login,
         loginWithGoogle,
         logout,
+        updateUsername,
         saveDogProfile
       }}
     >

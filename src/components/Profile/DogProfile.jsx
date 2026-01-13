@@ -1,9 +1,34 @@
-import { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Camera } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Camera, Cake, Calendar, X } from 'lucide-react';
 import { useUser } from '../../context/UserContext';
 import { fileToBase64 } from '../../utils/storage';
 import styles from './DogProfile.module.css';
+
+const calculateDogAge = (birthday) => {
+  if (!birthday) return null;
+  const birth = new Date(birthday + 'T00:00:00');
+  const today = new Date();
+  let years = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    years--;
+  }
+  return years;
+};
+
+const getDaysUntilBirthday = (birthday) => {
+  if (!birthday) return null;
+  const today = new Date();
+  const birth = new Date(birthday + 'T00:00:00');
+  const nextBirthday = new Date(today.getFullYear(), birth.getMonth(), birth.getDate());
+  if (nextBirthday < today) {
+    nextBirthday.setFullYear(today.getFullYear() + 1);
+  }
+  const diffTime = nextBirthday.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
+};
 
 const DOG_SIZES = [
   { id: 'small', label: 'Small', description: 'Under 20 lbs' },
@@ -42,10 +67,18 @@ export function DogProfile({ onEditingChange }) {
     chewStrength: dogProfile?.chewStrength || '',
     playStyle: dogProfile?.playStyle || '',
     activityLevel: dogProfile?.activityLevel || '',
-    photo: dogProfile?.photo || ''
+    photo: dogProfile?.photo || '',
+    birthday: dogProfile?.birthday || ''
   });
   const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Notify parent of initial editing state
+  useEffect(() => {
+    if (!dogProfile) {
+      onEditingChange?.(true);
+    }
+  }, []);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -76,9 +109,11 @@ export function DogProfile({ onEditingChange }) {
 
     setIsSaving(true);
     try {
-      saveDogProfile(formData);
+      await saveDogProfile(formData);
       setIsEditing(false);
       onEditingChange?.(false);
+    } catch (err) {
+      alert('Failed to save profile: ' + (err.message || 'Unknown error'));
     } finally {
       setIsSaving(false);
     }
@@ -127,6 +162,29 @@ export function DogProfile({ onEditingChange }) {
             <div className={styles.detail}>
               <span className={styles.detailLabel}>Activity</span>
               <span>{ACTIVITY_LEVELS.find((a) => a.id === dogProfile.activityLevel)?.label}</span>
+            </div>
+          )}
+          {dogProfile.birthday && (
+            <div className={`${styles.detail} ${styles.birthdayDetail}`}>
+              <span className={styles.detailLabel}>Birthday</span>
+              <div className={styles.birthdayInfo}>
+                <span className={styles.birthdayValue}>
+                  <Cake size={14} />
+                  {new Date(dogProfile.birthday + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </span>
+                {calculateDogAge(dogProfile.birthday) !== null && (
+                  <span className={styles.dogAge}>
+                    {calculateDogAge(dogProfile.birthday)} {calculateDogAge(dogProfile.birthday) === 1 ? 'year' : 'years'} old
+                  </span>
+                )}
+                {getDaysUntilBirthday(dogProfile.birthday) === 0 ? (
+                  <span className={styles.birthdayCountdown}>Today!</span>
+                ) : getDaysUntilBirthday(dogProfile.birthday) <= 30 && (
+                  <span className={styles.birthdayCountdown}>
+                    {getDaysUntilBirthday(dogProfile.birthday)} days away
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -181,6 +239,62 @@ export function DogProfile({ onEditingChange }) {
           onChange={(e) => handleChange('name', e.target.value)}
           placeholder="Enter name"
         />
+      </div>
+
+      <div className={styles.formField}>
+        <label>
+          <Cake size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+          Birthday
+          <span className={styles.labelHint}>(for special birthday treats!)</span>
+        </label>
+        <div className={styles.birthdayInputWrapper}>
+          <Calendar size={18} className={styles.calendarIcon} />
+          <input
+            type="date"
+            value={formData.birthday}
+            onChange={(e) => handleChange('birthday', e.target.value)}
+            className={styles.dateInput}
+            max={new Date().toISOString().split('T')[0]}
+          />
+          <AnimatePresence>
+            {formData.birthday && (
+              <motion.button
+                type="button"
+                className={styles.clearDateBtn}
+                onClick={() => handleChange('birthday', '')}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <X size={14} />
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </div>
+        <AnimatePresence>
+          {formData.birthday && (
+            <motion.div
+              className={styles.birthdayPreview}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+            >
+              <Cake size={16} />
+              <span>
+                {new Date(formData.birthday + 'T00:00:00').toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric'
+                })}
+                {calculateDogAge(formData.birthday) !== null && (
+                  <> ({calculateDogAge(formData.birthday)} {calculateDogAge(formData.birthday) === 1 ? 'year' : 'years'} old)</>
+                )}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <div className={styles.formField}>
@@ -275,7 +389,8 @@ export function DogProfile({ onEditingChange }) {
                 chewStrength: dogProfile.chewStrength,
                 playStyle: dogProfile.playStyle,
                 activityLevel: dogProfile.activityLevel,
-                photo: dogProfile.photo
+                photo: dogProfile.photo,
+                birthday: dogProfile.birthday || ''
               });
               setIsEditing(false);
               onEditingChange?.(false);

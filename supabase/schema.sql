@@ -10,9 +10,14 @@ CREATE TABLE IF NOT EXISTS dog_profiles (
   size TEXT CHECK (size IN ('small', 'medium', 'large', 'giant')),
   chew_strength TEXT CHECK (chew_strength IN ('gentle', 'moderate', 'aggressive', 'destroyer')),
   play_style TEXT CHECK (play_style IN ('fetch', 'tug', 'cuddle', 'puzzle')),
+  birthday DATE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Migration: Add birthday column if table already exists
+-- Run this separately if you already created the table:
+-- ALTER TABLE dog_profiles ADD COLUMN IF NOT EXISTS birthday DATE;
 
 -- Enable Row Level Security
 ALTER TABLE dog_profiles ENABLE ROW LEVEL SECURITY;

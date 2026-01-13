@@ -10,6 +10,7 @@ import { MatchCelebration } from './components/MatchCelebration';
 import { DailyFeatured } from './components/DailyFeatured';
 import { DEFAULT_FILTERS, applyFilters } from './components/FilterPanel';
 import { FriendActivityPanel } from './components/FriendActivityPanel';
+import { BirthdayBanner } from './components/BirthdayBanner';
 import { useCart } from './context/CartContext';
 import { useUser } from './context/UserContext';
 import { toys } from './data/toys';
@@ -88,6 +89,7 @@ function App() {
 
   return (
     <div className={styles.app}>
+      <BirthdayBanner />
       <Cart />
 
       <nav className={styles.nav}>

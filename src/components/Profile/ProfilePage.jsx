@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Dog, Share2, LogOut, SlidersHorizontal, RotateCcw, Package } from 'lucide-react';
+import { X, Dog, Share2, LogOut, SlidersHorizontal, RotateCcw, Package, Pencil, Check } from 'lucide-react';
 import { useUser } from '../../context/UserContext';
 import { DogProfile } from './DogProfile';
 import { PurchaseHistory } from './PurchaseHistory';
@@ -17,8 +17,40 @@ const RATING_OPTIONS = [
 ];
 
 export function ProfilePage({ onClose, filters, onFilterChange, onViewDetails }) {
-  const { user, logout } = useUser();
+  const { user, logout, updateUsername } = useUser();
   const [isEditingDog, setIsEditingDog] = useState(false);
+  const [isEditingUsername, setIsEditingUsername] = useState(false);
+  const [newUsername, setNewUsername] = useState(user?.username || '');
+  const [isSavingUsername, setIsSavingUsername] = useState(false);
+  const [showUsernameSaved, setShowUsernameSaved] = useState(false);
+
+  const handleDogEditingChange = (editing) => {
+    setIsEditingDog(editing);
+    // Close username editing when dog profile editing is cancelled
+    if (!editing) {
+      setIsEditingUsername(false);
+      setNewUsername(user.username);
+    }
+  };
+
+  const handleSaveUsername = async () => {
+    if (!newUsername.trim() || newUsername.trim() === user.username) {
+      setIsEditingUsername(false);
+      setNewUsername(user.username);
+      return;
+    }
+    setIsSavingUsername(true);
+    try {
+      await updateUsername(newUsername.trim());
+      setIsEditingUsername(false);
+      setShowUsernameSaved(true);
+      setTimeout(() => setShowUsernameSaved(false), 2000);
+    } catch (err) {
+      alert('Failed to update username');
+    } finally {
+      setIsSavingUsername(false);
+    }
+  };
 
   const handleCategoryToggle = (categoryId) => {
     const newCategories = filters.categories.includes(categoryId)
@@ -66,7 +98,73 @@ export function ProfilePage({ onClose, filters, onFilterChange, onViewDetails })
             <div className={styles.avatar}>
               {user.username.charAt(0).toUpperCase()}
             </div>
-            <h2>{user.username}</h2>
+            <div className={styles.usernameRow}>
+              {isEditingUsername ? (
+                <div className={styles.usernameEdit}>
+                  <input
+                    type="text"
+                    value={newUsername}
+                    onChange={(e) => setNewUsername(e.target.value)}
+                    className={styles.usernameInput}
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveUsername();
+                      if (e.key === 'Escape') {
+                        setIsEditingUsername(false);
+                        setNewUsername(user.username);
+                      }
+                    }}
+                  />
+                  <motion.button
+                    className={`${styles.usernameEditBtn} ${styles.saveBtn}`}
+                    onClick={handleSaveUsername}
+                    disabled={isSavingUsername}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    {isSavingUsername ? (
+                      <motion.div
+                        className={styles.spinner}
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      />
+                    ) : (
+                      <Check size={16} />
+                    )}
+                  </motion.button>
+                </div>
+              ) : (
+                <>
+                  <h2>{user.username}</h2>
+                  <AnimatePresence mode="wait">
+                    {showUsernameSaved ? (
+                      <motion.span
+                        key="saved"
+                        className={styles.savedBadge}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                      >
+                        <Check size={12} /> Saved!
+                      </motion.span>
+                    ) : isEditingDog && (
+                      <motion.button
+                        key="edit"
+                        className={styles.usernameEditBtn}
+                        onClick={() => setIsEditingUsername(true)}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <Pencil size={14} />
+                      </motion.button>
+                    )}
+                  </AnimatePresence>
+                </>
+              )}
+            </div>
             <p className={styles.memberSince}>
               Member since {new Date(user.createdAt).toLocaleDateString()}
             </p>
@@ -78,7 +176,7 @@ export function ProfilePage({ onClose, filters, onFilterChange, onViewDetails })
                 <Dog size={14} />
                 My Dog
               </h3>
-              <DogProfile onEditingChange={setIsEditingDog} />
+              <DogProfile onEditingChange={handleDogEditingChange} />
             </section>
 
             {!isEditingDog && (

@@ -1,0 +1,118 @@
+.banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #ff6b9d 0%, #ff8e53 50%, #ffc107 100%);
+  padding: var(--space-4) var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  z-index: 1000;
+  box-shadow: var(--shadow-lg);
+}
+
+.confetti {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.content {
+  flex: 1;
+  color: white;
+}
+
+.title {
+  margin: 0 0 var(--space-1) 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.message {
+  margin: 0 0 var(--space-3) 0;
+  font-size: var(--font-size-sm);
+  opacity: 0.95;
+}
+
+.message strong {
+  background: rgba(255, 255, 255, 0.2);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-family: monospace;
+  letter-spacing: 0.05em;
+}
+
+.claimBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: white;
+  border: none;
+  border-radius: var(--radius-full);
+  color: #ff6b9d;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.claimBtn:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-md);
+}
+
+.closeBtn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: var(--radius-full);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 600px) {
+  .banner {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .confetti {
+    width: 40px;
+    height: 40px;
+  }
+
+  .title {
+    font-size: var(--font-size-base);
+  }
+
+  .message {
+    font-size: var(--font-size-xs);
+  }
+}
